@@ -28,6 +28,9 @@ namespace QuantConnect.Lean.Engine.Alphas
     /// </summary>
     public class ChartingInsightManagerExtension : IInsightManagerExtension
     {
+        private bool _firstInsightAnalysisClosed = false;
+        private bool _firstInsightAnalysisCompleted = false;
+
         private readonly bool _liveMode;
         private readonly StatisticsInsightManagerExtension _statisticsManager;
 
@@ -116,7 +119,13 @@ namespace QuantConnect.Lean.Engine.Alphas
                             var score = 100 * _statisticsManager.Statistics.RollingAveragedPopulationScore.GetScore(scoreType);
                             _insightScoreSeriesByScoreType[scoreType].AddPoint(frontierTimeUtc, (decimal)score, _liveMode);
                         }
+
                         _nextChartSampleAlgorithmTimeUtc = frontierTimeUtc + SampleInterval;
+                        Log.Trace($"ChartingInsightManagerExtension.Step(): Sampled charts. Next sample: {_nextChartSampleAlgorithmTimeUtc}");
+                    }
+                    else
+                    {
+                        Log.Trace($"ChartingInsightManagerExtension.Step(): _statisticsManager.RollingAverageIsReady is false. No sample taken.");
                     }
                 }
                 catch (Exception err)
@@ -149,10 +158,12 @@ namespace QuantConnect.Lean.Engine.Alphas
                 // space out backtesting samples evenly
                 var backtestPeriod = algorithmEndDate - algorithmStartDate;
                 SampleInterval = TimeSpan.FromTicks(backtestPeriod.Ticks / BacktestChartSamples);
+                Log.Trace($"ChartingInsightManagerExtension.InitializeForRange(): SampleInterval: {SampleInterval.TotalMinutes} minutes");
             }
 
             _nextChartSampleAlgorithmTimeUtc = algorithmUtcTime + SampleInterval;
             _lastInsightCountSampleDateUtc = algorithmUtcTime.RoundDown(Time.OneDay);
+            Log.Trace($"ChartingInsightManagerExtension.InitializeForRange(): _nextChartSampleAlgorithmTimeUtc: {_nextChartSampleAlgorithmTimeUtc:o}");
         }
 
         /// <summary>
@@ -183,6 +194,11 @@ namespace QuantConnect.Lean.Engine.Alphas
         /// <param name="context">Context whose insight has just completed analysis</param>
         public void OnInsightClosed(InsightAnalysisContext context)
         {
+            if (!_firstInsightAnalysisClosed)
+            {
+                Log.Trace($"ChartingInsightManagerExtension.OnInsightClosed(): First insight closed at {context.CurrentValues.TimeUtc:o}");
+                _firstInsightAnalysisClosed = true;
+            }
         }
 
         /// <summary>
@@ -191,6 +207,11 @@ namespace QuantConnect.Lean.Engine.Alphas
         /// <param name="context">Context whose insight has just completed analysis</param>
         public void OnInsightAnalysisCompleted(InsightAnalysisContext context)
         {
+            if (!_firstInsightAnalysisCompleted)
+            {
+                Log.Trace($"ChartingInsightManagerExtension.OnInsightAnalysisCompleted(): First insight analysis completed at {context.CurrentValues.TimeUtc:o}");
+                _firstInsightAnalysisCompleted = true;
+            }
         }
 
         /// <summary>
