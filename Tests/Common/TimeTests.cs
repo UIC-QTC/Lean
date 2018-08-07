@@ -176,13 +176,13 @@ namespace QuantConnect.Tests.Common
         private static readonly TimeSpan USEquityPostClose = new TimeSpan(20, 0, 0);
         private static SecurityExchangeHours CreateUsEquitySecurityExchangeHours()
         {
-            var sunday = LocalMarketHours.ClosedAllDay(DayOfWeek.Sunday);
-            var monday = new LocalMarketHours(DayOfWeek.Monday, USEquityPreOpen, USEquityOpen, USEquityClose, USEquityPostClose);
-            var tuesday = new LocalMarketHours(DayOfWeek.Tuesday, USEquityPreOpen, USEquityOpen, USEquityClose, USEquityPostClose);
+            var sunday    =     LocalMarketHours.ClosedAllDay(DayOfWeek.Sunday);
+            var monday    = new LocalMarketHours(DayOfWeek.Monday,    USEquityPreOpen, USEquityOpen, USEquityClose, USEquityPostClose);
+            var tuesday   = new LocalMarketHours(DayOfWeek.Tuesday,   USEquityPreOpen, USEquityOpen, USEquityClose, USEquityPostClose);
             var wednesday = new LocalMarketHours(DayOfWeek.Wednesday, USEquityPreOpen, USEquityOpen, USEquityClose, USEquityPostClose);
-            var thursday = new LocalMarketHours(DayOfWeek.Thursday, USEquityPreOpen, USEquityOpen, USEquityClose, USEquityPostClose);
-            var friday = new LocalMarketHours(DayOfWeek.Friday, USEquityPreOpen, USEquityOpen, USEquityClose, USEquityPostClose);
-            var saturday = LocalMarketHours.ClosedAllDay(DayOfWeek.Saturday);
+            var thursday  = new LocalMarketHours(DayOfWeek.Thursday,  USEquityPreOpen, USEquityOpen, USEquityClose, USEquityPostClose);
+            var friday    = new LocalMarketHours(DayOfWeek.Friday,    USEquityPreOpen, USEquityOpen, USEquityClose, USEquityPostClose);
+            var saturday  =     LocalMarketHours.ClosedAllDay(DayOfWeek.Saturday);
 
             var earlyCloses = new Dictionary<DateTime, TimeSpan>();
             return new SecurityExchangeHours(TimeZones.NewYork, USHoliday.Dates.Select(x => x.Date), new[]
