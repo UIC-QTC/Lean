@@ -1335,7 +1335,7 @@ namespace QuantConnect.Algorithm
                 var subscriptions = SubscriptionManager.Subscriptions.OrderBy(x => x.TickType);
 
                 // find our subscription to this symbol
-                subscription = subscriptions.FirstOrDefault(x => x.Symbol == symbol && (tickType == null || tickType == x.TickType));
+                subscription = subscriptions.FirstOrDefault(x => x.Symbol == symbol && !x.IsInternalFeed && (tickType == null || tickType == x.TickType));
                 if (subscription == null)
                 {
                     // if we can't locate the exact subscription by tick type just grab the first one we find

@@ -128,13 +128,13 @@ namespace QuantConnect.Algorithm.CSharp
             {"Loss Rate", "90%"},
             {"Win Rate", "10%"},
             {"Profit-Loss Ratio", "0.39"},
-            {"Alpha", "-15.5"},
-            {"Beta", "-2.098"},
+            {"Alpha", "-19.348"},
+            {"Beta", "1.382"},
             {"Annual Standard Deviation", "0.566"},
             {"Annual Variance", "0.32"},
-            {"Information Ratio", "-28.931"},
-            {"Tracking Error", "0.686"},
-            {"Treynor Ratio", "8.788"},
+            {"Information Ratio", "-39.466"},
+            {"Tracking Error", "0.484"},
+            {"Treynor Ratio", "-13.343"},
             {"Total Fees", "$15203.30"}
         };
     }
