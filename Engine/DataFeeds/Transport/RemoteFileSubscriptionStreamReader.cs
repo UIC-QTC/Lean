@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using QuantConnect.Interfaces;
+using QuantConnect.Logging;
 
 namespace QuantConnect.Lean.Engine.DataFeeds.Transport
 {
@@ -39,9 +40,13 @@ namespace QuantConnect.Lean.Engine.DataFeeds.Transport
         /// <param name="headers">Defines header values to add to the request</param>
         public RemoteFileSubscriptionStreamReader(IDataCacheProvider dataCacheProvider, string source, string downloadDirectory, IEnumerable<KeyValuePair<string, string>> headers)
         {
+            Log.Trace($"RemoteFileSubscriptionStreamReader(): dataCacheProvider: {dataCacheProvider.GetType().FullName}");
+
             // create a hash for a new filename
             var filename = Guid.NewGuid() + source.GetExtension();
             var destination = Path.Combine(downloadDirectory, filename);
+
+            Log.Trace($"RemoteFileSubscriptionStreamReader(): destination: {destination}");
 
             using (var client = new WebClient())
             {
@@ -54,11 +59,16 @@ namespace QuantConnect.Lean.Engine.DataFeeds.Transport
                     }
                 }
 
+                Log.Trace($"RemoteFileSubscriptionStreamReader(): before DownloadFile: {source}");
                 client.DownloadFile(source, destination);
+                Log.Trace($"RemoteFileSubscriptionStreamReader(): after DownloadFile: {destination}");
             }
 
+            var bytes = File.ReadAllBytes(destination);
+            Log.Trace($"RemoteFileSubscriptionStreamReader(): bytes read: {bytes.Length}");
+
             // Send the file to the dataCacheProvider so it is available when the streamReader asks for it
-            dataCacheProvider.Store(destination, File.ReadAllBytes(destination));
+            dataCacheProvider.Store(destination, bytes);
 
             // now we can just use the local file reader
             _streamReader = new LocalFileSubscriptionStreamReader(dataCacheProvider, destination);

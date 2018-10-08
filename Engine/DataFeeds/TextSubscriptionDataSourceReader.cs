@@ -19,6 +19,7 @@ using System.ComponentModel;
 using QuantConnect.Data;
 using QuantConnect.Interfaces;
 using QuantConnect.Lean.Engine.DataFeeds.Transport;
+using QuantConnect.Logging;
 using QuantConnect.Util;
 
 namespace QuantConnect.Lean.Engine.DataFeeds
@@ -78,6 +79,8 @@ namespace QuantConnect.Lean.Engine.DataFeeds
         /// <returns>An <see cref="IEnumerable{BaseData}"/> that contains the data in the source</returns>
         public IEnumerable<BaseData> Read(SubscriptionDataSource source)
         {
+            Log.Trace($"TextSubscriptionDataSourceReader.Read(): source: {source.Source}");
+
             using (var reader = CreateStreamReader(source))
             {
                 // if the reader doesn't have data then we're done with this subscription
@@ -185,6 +188,8 @@ namespace QuantConnect.Lean.Engine.DataFeeds
         /// </summary>
         private IStreamReader HandleRemoteSourceFile(SubscriptionDataSource source)
         {
+            Log.Trace($"TextSubscriptionDataSourceReader.HandleRemoteSourceFile():");
+
             SubscriptionDataSourceReader.CheckRemoteFileCache();
 
             try

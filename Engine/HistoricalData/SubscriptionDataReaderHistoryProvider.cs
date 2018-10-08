@@ -28,6 +28,7 @@ using QuantConnect.Lean.Engine.DataFeeds.Enumerators;
 using QuantConnect.Lean.Engine.Results;
 using QuantConnect.Lean.Engine.Setup;
 using QuantConnect.Lean.Engine.TransactionHandlers;
+using QuantConnect.Logging;
 using QuantConnect.Orders;
 using QuantConnect.Packets;
 using QuantConnect.Securities;
@@ -73,10 +74,13 @@ namespace QuantConnect.Lean.Engine.HistoricalData
         /// <returns>An enumerable of the slices of data covering the span specified in each request</returns>
         public override IEnumerable<Slice> GetHistory(IEnumerable<HistoryRequest> requests, DateTimeZone sliceTimeZone)
         {
+            Log.Trace("SubscriptionDataReaderHistoryProvider.GetHistory():");
             // create subscription objects from the configs
             var subscriptions = new List<Subscription>();
             foreach (var request in requests)
             {
+                Log.Trace($"SubscriptionDataReaderHistoryProvider.GetHistory(): request: {request}");
+
                 var subscription = CreateSubscription(request, request.StartTimeUtc, request.EndTimeUtc);
                 subscription.MoveNext(); // prime pump
                 subscriptions.Add(subscription);
