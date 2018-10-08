@@ -199,6 +199,7 @@ namespace QuantConnect.Lean.Engine.DataFeeds
             }
             catch (Exception err)
             {
+                Log.Error($"TextSubscriptionDataSourceReader.HandleRemoteSourceFile(): error: {err}");
                 OnInvalidSource(source, err);
                 return null;
             }
