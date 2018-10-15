@@ -14,6 +14,7 @@
 */
 
 using QuantConnect.Interfaces;
+using QuantConnect.Securities;
 
 namespace QuantConnect.Algorithm.Framework.Portfolio
 {

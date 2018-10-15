@@ -211,12 +211,14 @@ namespace QuantConnect.Securities
         /// <summary>
         /// Check if there is sufficient buying power to execute this order.
         /// </summary>
-        /// <param name="portfolio">The algorithm's portfolio</param>
-        /// <param name="security">The security to be traded</param>
-        /// <param name="order">The order to be checked</param>
+        /// <param name="context">A context object containing the security, order, and algorithm's portfolio</param>
         /// <returns>Returns buying power information for an order</returns>
-        public HasSufficientBuyingPowerForOrderResult HasSufficientBuyingPowerForOrder(SecurityPortfolioManager portfolio, Security security, Order order)
+        public HasSufficientBuyingPowerForOrderResult HasSufficientBuyingPowerForOrder(SufficientBuyingPowerForOrderContext context)
         {
+            var security = context.Security;
+            var portfolio = context.Portfolio;
+            var order = context.Order;
+
             // short circuit the div 0 case
             if (order.Quantity == 0)
             {
@@ -281,14 +283,18 @@ namespace QuantConnect.Securities
         }
 
         /// <summary>
-        /// Get the maximum market order quantity to obtain a position with a given value in account currency. Will not take into account buying power.
+        /// Get the maximum market order quantity to obtain a position with a given value in account currency
         /// </summary>
-        /// <param name="portfolio">The algorithm's portfolio</param>
-        /// <param name="security">The security to be traded</param>
-        /// <param name="target">Target percentage holdings</param>
+        /// <param name="context">A context object containing the security and the algorithm's portfolio and the target holdings percent</param>
         /// <returns>Returns the maximum allowed market order quantity and if zero, also the reason</returns>
-        public GetMaximumOrderQuantityForTargetValueResult GetMaximumOrderQuantityForTargetValue(SecurityPortfolioManager portfolio, Security security, decimal target)
+        public GetMaximumOrderQuantityForTargetValueResult GetMaximumOrderQuantityForTargetValue(
+            MaximumOrderQuantityForTargetValueContext context
+            )
         {
+            var security = context.Security;
+            var portfolio = context.Portfolio;
+            var target = context.Target;
+
             // adjust target portfolio value to comply with required Free Buying Power Percent
             var targetPortfolioValue = target * (portfolio.TotalPortfolioValue - portfolio.TotalPortfolioValue * RequiredFreeBuyingPowerPercent);
 
@@ -406,13 +412,11 @@ namespace QuantConnect.Securities
         /// <summary>
         /// Gets the buying power available for a trade
         /// </summary>
-        /// <param name="portfolio">The algorithm's portfolio</param>
-        /// <param name="security">The security to be traded</param>
-        /// <param name="direction">The direction of the trade</param>
+        /// <param name="context">A context object containing the security, the algorithm's portfolio and the desired direction</param>
         /// <returns>The buying power available for the trade</returns>
-        public decimal GetBuyingPower(SecurityPortfolioManager portfolio, Security security, OrderDirection direction)
+        public decimal GetBuyingPower(BuyingPowerContext context)
         {
-            return GetMarginRemaining(portfolio, security, direction);
+            return GetMarginRemaining(context.Portfolio, context.Security, context.Direction);
         }
     }
 }
