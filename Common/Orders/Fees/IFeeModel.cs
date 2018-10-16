@@ -13,6 +13,7 @@
  * limitations under the License.
 */
 
+using System;
 using QuantConnect.Securities;
 
 namespace QuantConnect.Orders.Fees
@@ -28,7 +29,7 @@ namespace QuantConnect.Orders.Fees
         /// </summary>
         /// <param name="context">A context providing access to the security and the order</param>
         /// <returns>The cost of the order in units of the account currency</returns>
-        decimal GetOrderFee(OrderFeeContext context);
+        OrderFee GetOrderFee(OrderFeeContext context);
     }
 
     /// <summary>
@@ -46,8 +47,15 @@ namespace QuantConnect.Orders.Fees
         /// <returns>The cost of the order in units of the account currency</returns>
         public static decimal GetOrderFee(this IFeeModel model, Security security, Order order)
         {
-            var context = new OrderFeeContext(security, order);
-            return model.GetOrderFee(context);
+            var context = new OrderFeeContext(security, order, new IdentityCurrencyConverter(CashBook.AccountCurrency));
+            var fee = model.GetOrderFee(context);
+
+            if (fee.Value.Currency != CashBook.AccountCurrency)
+            {
+                throw new InvalidOperationException("The GetOrderFee extension method is only valid for fee models returning fees in the account currency");
+            }
+
+            return fee.Value.Amount;
         }
     }
 }

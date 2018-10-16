@@ -153,9 +153,9 @@ namespace QuantConnect.Securities
         /// </summary>
         /// <param name="context">A context providing access to the security and the order</param>
         /// <returns>The cost of the order in units of the account currency</returns>
-        public virtual decimal GetOrderFee(OrderFeeContext context)
+        public virtual OrderFee GetOrderFee(OrderFeeContext context)
         {
-            return Math.Abs(_feeModel.GetOrderFee(context));
+            return _feeModel.GetOrderFee(context);
         }
     }
 }

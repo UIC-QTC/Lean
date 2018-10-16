@@ -33,7 +33,7 @@ namespace QuantConnect.Orders.Fees
         /// </summary>
         /// <param name="context">A context providing access to the security and the order</param>
         /// <returns>The cost of the order in units of the account currency</returns>
-        public decimal GetOrderFee(OrderFeeContext context)
+        public OrderFee GetOrderFee(OrderFeeContext context)
         {
             var security = context.Security;
             var order = context.Order;
@@ -42,7 +42,7 @@ namespace QuantConnect.Orders.Fees
             if (order.Type == OrderType.Limit && !order.IsMarketable)
             {
                 // limit order posted to the order book, 0% maker fee
-                return 0m;
+                return context.CreateZeroFee();
             }
 
             // get order value in account currency, then apply taker fee factor
@@ -50,8 +50,8 @@ namespace QuantConnect.Orders.Fees
             unitPrice *= security.QuoteCurrency.ConversionRate * security.SymbolProperties.ContractMultiplier;
 
             // currently we do not model 30-day volume, so we use the first tier
-
-            return unitPrice * order.AbsoluteQuantity * TakerFee;
+            var fee = unitPrice * order.AbsoluteQuantity * TakerFee;
+            return context.CreateFeeInAccountCurrency(fee);
         }
     }
 }

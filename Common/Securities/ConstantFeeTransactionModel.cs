@@ -40,9 +40,9 @@ namespace QuantConnect.Securities
         /// </summary>
         /// <param name="context">A context providing access to the security and the order</param>
         /// <returns>The cost of the order in units of the account currency</returns>
-        public override decimal GetOrderFee(OrderFeeContext context)
+        public override OrderFee GetOrderFee(OrderFeeContext context)
         {
-            return _fee;
+            return context.CreateFeeInAccountCurrency(_fee);
         }
     }
 }

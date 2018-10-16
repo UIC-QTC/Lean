@@ -40,7 +40,7 @@ namespace QuantConnect.Orders.Fees
         /// </summary>
         /// <param name="context">A context providing access to the security and the order</param>
         /// <returns>The cost of the order in units of the account currency</returns>
-        public decimal GetOrderFee(OrderFeeContext context)
+        public OrderFee GetOrderFee(OrderFeeContext context)
         {
             // From http://www.fxcm.com/forex/forex-pricing/ (on Oct 6th, 2015)
             // Forex: $0.04 per side per 1k lot for EURUSD, GBPUSD, USDJPY, USDCHF, AUDUSD, EURJPY, GBPJPY
@@ -53,11 +53,14 @@ namespace QuantConnect.Orders.Fees
             var order = context.Order;
 
             if (security.Type != SecurityType.Forex)
-                return 0m;
+            {
+                return context.CreateZeroFee();
+            }
 
             var commissionRate = _groupCommissionSchedule1.Contains(security.Symbol) ? 0.04m : 0.06m;
 
-            return Math.Abs(commissionRate*order.AbsoluteQuantity/1000);
+            var fee = Math.Abs(commissionRate*order.AbsoluteQuantity/1000);
+            return context.CreateFeeInAccountCurrency(fee);
         }
     }
 }

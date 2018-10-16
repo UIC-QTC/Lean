@@ -42,7 +42,7 @@ namespace QuantConnect.Python
         /// </summary>
         /// <param name="context">A context providing access to the security and the order</param>
         /// <returns>The cost of the order in units of the account currency</returns>
-        public decimal GetOrderFee(OrderFeeContext context)
+        public OrderFee GetOrderFee(OrderFeeContext context)
         {
             using (Py.GIL())
             {

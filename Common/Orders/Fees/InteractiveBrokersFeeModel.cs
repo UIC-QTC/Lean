@@ -48,7 +48,7 @@ namespace QuantConnect.Orders.Fees
         /// </summary>
         /// <param name="context">A context providing access to the security and the order</param>
         /// <returns>The cost of the order in units of the account currency</returns>
-        public decimal GetOrderFee(OrderFeeContext context)
+        public OrderFee GetOrderFee(OrderFeeContext context)
         {
             var security = context.Security;
             var order = context.Order;
@@ -61,25 +61,29 @@ namespace QuantConnect.Orders.Fees
                 if (optionOrder.Symbol.ID.SecurityType == SecurityType.Option &&
                     optionOrder.Symbol.ID.Underlying.SecurityType == SecurityType.Equity)
                 {
-                    return 0m;
+                    return context.CreateZeroFee();
                 }
             }
 
+            decimal fee;
             switch (security.Type)
             {
                 case SecurityType.Forex:
                     // get the total order value in the account currency
                     var totalOrderValue = order.GetValue(security);
-                    var fee = Math.Abs(_forexCommissionRate*totalOrderValue);
-                    return Math.Max(_forexMinimumOrderFee, fee);
+                    fee = Math.Abs(_forexCommissionRate*totalOrderValue);
+                    fee = Math.Max(_forexMinimumOrderFee, fee);
+                    break;
 
                 case SecurityType.Option:
                     // applying commission function to the order
-                    return _optionsCommissionFunc(order.AbsoluteQuantity, order.Price);
+                    fee = _optionsCommissionFunc(order.AbsoluteQuantity, order.Price);
+                    break;
 
                 case SecurityType.Future:
                     // currently we treat all futures as USD denominated generic US futures
-                    return order.AbsoluteQuantity * (0.85m + 1.0m);
+                    fee = order.AbsoluteQuantity * (0.85m + 1.0m);
+                    break;
 
                 case SecurityType.Equity:
                     var tradeValue = Math.Abs(order.GetValue(security));
@@ -100,11 +104,16 @@ namespace QuantConnect.Orders.Fees
                     }
 
                     //Always return a positive fee.
-                    return Math.Abs(tradeFee);
+                    fee = Math.Abs(tradeFee);
+                    break;
+
+                // all other types default to zero fees
+                default:
+                    fee = 0m;
+                    break;
             }
 
-            // all other types default to zero fees
-            return 0m;
+            return context.CreateFeeInAccountCurrency(fee);
         }
 
         /// <summary>
