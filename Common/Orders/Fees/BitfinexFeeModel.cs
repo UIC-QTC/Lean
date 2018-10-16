@@ -13,6 +13,8 @@
  * limitations under the License.
 */
 
+using QuantConnect.Securities;
+
 namespace QuantConnect.Orders.Fees
 {
     /// <summary>
@@ -37,16 +39,18 @@ namespace QuantConnect.Orders.Fees
         /// <summary>
         /// Get the fee for this order in units of the account currency
         /// </summary>
-        /// <param name="security">The security matching the order</param>
-        /// <param name="order">The order to compute fees for</param>
+        /// <param name="context">A context providing access to the security and the order</param>
         /// <returns>The cost of the order in units of the account currency</returns>
-        public decimal GetOrderFee(Securities.Security security, Order order)
+        public decimal GetOrderFee(OrderFeeContext context)
         {
+            var security = context.Security;
+            var order = context.Order;
+
             decimal fee = TakerFee;
             var props = order.Properties as BitfinexOrderProperties;
-            
+
             if (order.Type == OrderType.Limit &&
-                props?.Hidden != true && 
+                props?.Hidden != true &&
                 (props?.PostOnly == true || !order.IsMarketable))
             {
                 // limit order posted to the order book

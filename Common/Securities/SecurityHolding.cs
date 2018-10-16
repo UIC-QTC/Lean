@@ -16,6 +16,7 @@
 using System;
 using QuantConnect.Algorithm.Framework.Portfolio;
 using QuantConnect.Orders;
+using QuantConnect.Orders.Fees;
 
 namespace QuantConnect.Securities
 {
