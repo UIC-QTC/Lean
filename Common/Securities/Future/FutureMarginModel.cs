@@ -68,6 +68,44 @@ namespace QuantConnect.Securities.Future
         }
 
         /// <summary>
+        /// The percentage of the holding's absolute cost that must be held in free cash in order to avoid a margin call
+        /// </summary>
+        public override decimal GetMaintenanceMarginRequirement(Security security)
+        {
+            return GetMaintenanceMarginRequirement(security, security.Holdings.HoldingsCost);
+        }
+
+        /// <summary>
+        /// The percentage of an order's absolute cost that must be held in free cash in order to place the order
+        /// </summary>
+        private decimal GetInitialMarginRequirement(Security security, decimal holdingValue)
+        {
+            if (security?.GetLastData() == null || holdingValue == 0m)
+                return 0m;
+
+            var symbol = security.Symbol;
+            var date = security.GetLastData().Time.Date;
+            var marginReq = GetCurrentMarginRequirements(symbol, date);
+
+            return marginReq.InitialOvernight / holdingValue;
+        }
+
+        /// <summary>
+        /// The percentage of the holding's absolute cost that must be held in free cash in order to avoid a margin call
+        /// </summary>
+        private decimal GetMaintenanceMarginRequirement(Security security, decimal holdingValue)
+        {
+            if (security?.GetLastData() == null || holdingValue == 0m)
+                return 0m;
+
+            var symbol = security.Symbol;
+            var date = security.GetLastData().Time.Date;
+            var marginReq = GetCurrentMarginRequirements(symbol, date);
+
+            return marginReq.MaintenanceOvernight / holdingValue;
+        }
+
+        /// <summary>
         /// Gets the total margin required to execute the specified order in units of the account currency including fees
         /// </summary>
         /// <param name="security">The security to compute initial margin for</param>
@@ -155,44 +193,6 @@ namespace QuantConnect.Securities.Future
         protected override decimal GetInitialMarginRequirement(Security security)
         {
             return GetInitialMarginRequirement(security, security.Holdings.HoldingsCost);
-        }
-
-        /// <summary>
-        /// The percentage of the holding's absolute cost that must be held in free cash in order to avoid a margin call
-        /// </summary>
-        public override decimal GetMaintenanceMarginRequirement(Security security)
-        {
-            return GetMaintenanceMarginRequirement(security, security.Holdings.HoldingsCost);
-        }
-
-        /// <summary>
-        /// The percentage of an order's absolute cost that must be held in free cash in order to place the order
-        /// </summary>
-        private decimal GetInitialMarginRequirement(Security security, decimal holdingValue)
-        {
-            if (security?.GetLastData() == null || holdingValue == 0m)
-                return 0m;
-
-            var symbol = security.Symbol;
-            var date = security.GetLastData().Time.Date;
-            var marginReq = GetCurrentMarginRequirements(symbol, date);
-
-            return marginReq.InitialOvernight / holdingValue;
-        }
-
-        /// <summary>
-        /// The percentage of the holding's absolute cost that must be held in free cash in order to avoid a margin call
-        /// </summary>
-        private decimal GetMaintenanceMarginRequirement(Security security, decimal holdingValue)
-        {
-            if (security?.GetLastData() == null || holdingValue == 0m)
-                return 0m;
-
-            var symbol = security.Symbol;
-            var date = security.GetLastData().Time.Date;
-            var marginReq = GetCurrentMarginRequirements(symbol, date);
-
-            return marginReq.MaintenanceOvernight / holdingValue;
         }
 
         private MarginRequirementsEntry GetCurrentMarginRequirements (Symbol symbol, DateTime date)

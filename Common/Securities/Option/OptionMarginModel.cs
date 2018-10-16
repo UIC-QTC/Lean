@@ -64,6 +64,14 @@ namespace QuantConnect.Securities.Option
         }
 
         /// <summary>
+        /// The percentage of the holding's absolute cost that must be held in free cash in order to avoid a margin call
+        /// </summary>
+        public override decimal GetMaintenanceMarginRequirement(Security security)
+        {
+            return GetMaintenanceMarginRequirement(security, security.Holdings.HoldingsValue);
+        }
+
+        /// <summary>
         /// Gets the total margin required to execute the specified order in units of the account currency including fees
         /// </summary>
         /// <param name="security">The security to compute initial margin for</param>
@@ -144,14 +152,6 @@ namespace QuantConnect.Securities.Option
         protected override decimal GetInitialMarginRequirement(Security security)
         {
             return GetInitialMarginRequirement(security, security.Holdings.HoldingsValue);
-        }
-
-        /// <summary>
-        /// The percentage of the holding's absolute cost that must be held in free cash in order to avoid a margin call
-        /// </summary>
-        public override decimal GetMaintenanceMarginRequirement(Security security)
-        {
-            return GetMaintenanceMarginRequirement(security, security.Holdings.HoldingsValue);
         }
 
         /// <summary>
