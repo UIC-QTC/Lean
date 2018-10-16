@@ -34,13 +34,27 @@ namespace QuantConnect.Securities
         }
 
         /// <summary>
-        /// Converts a cash amount to the account currency
+        /// Throws an exception. This implementation is provided as a means of ensuring it is never invoked.
+        /// </summary>
+        public string AccountCurrency
+        {
+            get { throw InvalidOperationException(); }
+        }
+
+        /// <summary>
+        /// Converts a cash amount to the account currency.
+        /// This method throws an exception.
         /// </summary>
         /// <param name="cashAmount">The <see cref="CashAmount"/> instance to convert</param>
         /// <returns>A new <see cref="CashAmount"/> instance denominated in the account currency</returns>
         public CashAmount ConvertToAccountCurrency(CashAmount cashAmount)
         {
-            throw new InvalidOperationException($"This method purposefully throws as a proof that a " +
+            throw InvalidOperationException();
+        }
+
+        private static InvalidOperationException InvalidOperationException()
+        {
+            return new InvalidOperationException("This method purposefully throws as a proof that a " +
                 $"test does not depend on {nameof(ICurrencyConverter)}.If this exception is encountered, " +
                 $"it means the test DOES depend on {nameof(ICurrencyConverter)} and should be properly " +
                 $"updated to use a real implementation of {nameof(ICurrencyConverter)}.");

@@ -321,6 +321,11 @@ namespace QuantConnect.Securities
         #region ICurrencyConverter Implementation
 
         /// <summary>
+        /// Gets the account currency, for example, USD
+        /// </summary>
+        string ICurrencyConverter.AccountCurrency => AccountCurrency;
+
+        /// <summary>
         /// Converts a cash amount to the account currency
         /// </summary>
         /// <param name="cashAmount">The <see cref="CashAmount"/> instance to convert</param>
