@@ -12,8 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 */
-using System;
-using QuantConnect.Orders;
 
 namespace QuantConnect.Securities.Option
 {
@@ -27,8 +25,9 @@ namespace QuantConnect.Securities.Option
         /// Option Holding Class constructor
         /// </summary>
         /// <param name="security">The option security being held</param>
-        public OptionHolding(Option security)
-            : base(security)
+        /// <param name="currencyConverter">Currency converter used for converting cash amounts into the account currency</param>
+        public OptionHolding(Option security, ICurrencyConverter currencyConverter)
+            : base(security, currencyConverter)
         {
         }
     }

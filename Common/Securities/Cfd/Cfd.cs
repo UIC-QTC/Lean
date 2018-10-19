@@ -54,7 +54,7 @@ namespace QuantConnect.Securities.Cfd
                 currencyConverter
                 )
         {
-            Holdings = new CfdHolding(this);
+            Holdings = new CfdHolding(this, currencyConverter);
         }
 
         /// <summary>
@@ -84,7 +84,7 @@ namespace QuantConnect.Securities.Cfd
                 currencyConverter
                 )
         {
-            Holdings = new CfdHolding(this);
+            Holdings = new CfdHolding(this, currencyConverter);
         }
 
         /// <summary>
