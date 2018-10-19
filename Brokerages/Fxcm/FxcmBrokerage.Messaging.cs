@@ -29,6 +29,7 @@ using NodaTime;
 using QuantConnect.Data.Market;
 using QuantConnect.Logging;
 using QuantConnect.Orders;
+using QuantConnect.Orders.Fees;
 
 namespace QuantConnect.Brokerages.Fxcm
 {
