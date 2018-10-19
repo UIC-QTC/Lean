@@ -1,11 +1,11 @@
 ﻿/*
  * QUANTCONNECT.COM - Democratizing Finance, Empowering Individuals.
  * Lean Algorithmic Trading Engine v2.0. Copyright 2014 QuantConnect Corporation.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); 
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,6 +16,7 @@
 using System;
 using NUnit.Framework;
 using QuantConnect.Orders;
+using QuantConnect.Securities;
 using QuantConnect.Statistics;
 
 namespace QuantConnect.Tests.Common.Statistics
@@ -23,7 +24,7 @@ namespace QuantConnect.Tests.Common.Statistics
     [TestFixture]
     public class TradeBuilderTests
     {
-        private const decimal OrderFee = 1;
+        private readonly CashAmount OrderFee = new CashAmount(1, CashBook.AccountCurrency, new IdentityCurrencyConverter(CashBook.AccountCurrency));
         private const decimal ConversionRate = 1;
         private readonly DateTime _startTime = new DateTime(2015, 08, 06, 15, 30, 0);
 
@@ -90,7 +91,7 @@ namespace QuantConnect.Tests.Common.Statistics
 
             builder.SetMarketPrice(Symbols.EURUSD, 1.075m);
             builder.SetMarketPrice(Symbols.EURUSD, 1.10m);
-            
+
             // Buy 1k
             builder.ProcessFill(new OrderEvent(2, Symbols.EURUSD, time.AddMinutes(10), OrderStatus.Filled, OrderDirection.Buy, fillPrice: 1.09m, fillQuantity: 1000, orderFee: OrderFee), ConversionRate);
 

@@ -1280,8 +1280,7 @@ namespace QuantConnect.Brokerages.InteractiveBrokers
                 var order = _orderProvider.GetOrderByBrokerageId(requestId);
                 if (order != null)
                 {
-                    const int orderFee = 0;
-                    var orderEvent = new OrderEvent(order, DateTime.UtcNow, orderFee)
+                    var orderEvent = new OrderEvent(order, DateTime.UtcNow, CashAmount.Zero)
                     {
                         Status = OrderStatus.Invalid,
                         Message = message
@@ -1462,7 +1461,7 @@ namespace QuantConnect.Brokerages.InteractiveBrokers
                     else
                     {
                         // fire the event
-                        OnOrderEvent(new OrderEvent(order, DateTime.UtcNow, 0, "Interactive Brokers Order Event")
+                        OnOrderEvent(new OrderEvent(order, DateTime.UtcNow, CashAmount.Zero, "Interactive Brokers Order Event")
                         {
                             Status = status
                         });
@@ -1636,7 +1635,8 @@ namespace QuantConnect.Brokerages.InteractiveBrokers
             // mark sells as negative quantities
             var fillQuantity = order.Direction == OrderDirection.Buy ? currentQuantityFilled : -currentQuantityFilled;
             order.PriceCurrency = _securityProvider.GetSecurity(order.Symbol).SymbolProperties.QuoteCurrency;
-            var orderEvent = new OrderEvent(order, DateTime.UtcNow, orderFee, "Interactive Brokers Order Fill Event")
+            var fee = new CashAmount(orderFee, CashBook.AccountCurrency, new IdentityCurrencyConverter(CashBook.AccountCurrency));
+            var orderEvent = new OrderEvent(order, DateTime.UtcNow, fee, "Interactive Brokers Order Fill Event")
             {
                 Status = status,
                 FillPrice = price,

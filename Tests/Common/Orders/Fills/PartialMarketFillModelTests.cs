@@ -168,7 +168,7 @@ namespace QuantConnect.Tests.Common.Orders.Fills
                 if (ticket == null)
                 {
                     // if we can't find the ticket issue empty fills
-                    return new OrderEvent(order, currentUtcTime, 0);
+                    return new OrderEvent(order, currentUtcTime, CashAmount.Zero);
                 }
 
                 // make sure some time has passed
@@ -177,7 +177,7 @@ namespace QuantConnect.Tests.Common.Orders.Fills
                 if (lastOrderEvent != null && currentUtcTime - lastOrderEvent.UtcTime < increment)
                 {
                     // wait a minute between fills
-                    return new OrderEvent(order, currentUtcTime, 0);
+                    return new OrderEvent(order, currentUtcTime, CashAmount.Zero);
                 }
 
                 var remaining = (int)(ticket.Quantity - ticket.QuantityFilled);

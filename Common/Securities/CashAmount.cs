@@ -25,6 +25,14 @@ namespace QuantConnect.Securities
         private readonly ICurrencyConverter _currencyConverter;
 
         /// <summary>
+        /// Gets an instance of <see cref="CashAmount"/> that represents zero.
+        /// </summary>
+        public static readonly CashAmount Zero = new CashAmount(0,
+            CashBook.AccountCurrency,
+            new IdentityCurrencyConverter(CashBook.AccountCurrency)
+        );
+
+        /// <summary>
         /// The amount of cash
         /// </summary>
         public decimal Amount { get; }

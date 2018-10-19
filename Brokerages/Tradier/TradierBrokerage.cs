@@ -968,7 +968,7 @@ namespace QuantConnect.Brokerages.Tradier
             }
 
             // success
-            OnOrderEvent(new OrderEvent(order, DateTime.UtcNow, 0) {Status = OrderStatus.Submitted});
+            OnOrderEvent(new OrderEvent(order, DateTime.UtcNow, CashAmount.Zero) {Status = OrderStatus.Submitted});
 
             // if we have contingents, update them as well
             if (contingent != null)
@@ -1022,8 +1022,7 @@ namespace QuantConnect.Brokerages.Tradier
                 {
                     TradierCachedOpenOrder tradierOrder;
                     _cachedOpenOrdersByTradierOrderID.TryRemove(id, out tradierOrder);
-                    const int orderFee = 0;
-                    OnOrderEvent(new OrderEvent(order, DateTime.UtcNow, orderFee, "Tradier Fill Event") { Status = OrderStatus.Canceled });
+                    OnOrderEvent(new OrderEvent(order, DateTime.UtcNow, CashAmount.Zero, "Tradier Fill Event") { Status = OrderStatus.Canceled });
                 }
             }
 
@@ -1096,9 +1095,8 @@ namespace QuantConnect.Brokerages.Tradier
             if (response != null && response.Errors.Errors.IsNullOrEmpty())
             {
                 // send the submitted event
-                const int orderFee = 0;
                 order.QCOrder.PriceCurrency = "USD";
-                OnOrderEvent(new OrderEvent(order.QCOrder, DateTime.UtcNow, orderFee) { Status = OrderStatus.Submitted });
+                OnOrderEvent(new OrderEvent(order.QCOrder, DateTime.UtcNow, CashAmount.Zero) { Status = OrderStatus.Submitted });
 
                 // mark this in our open orders before we submit so it's gauranteed to be there when we poll for updates
                 UpdateCachedOpenOrder(response.Order.Id, new TradierOrderDetailed
@@ -1127,8 +1125,7 @@ namespace QuantConnect.Brokerages.Tradier
             else
             {
                 // invalidate the order, bad request
-                const int orderFee = 0;
-                OnOrderEvent(new OrderEvent(order.QCOrder, DateTime.UtcNow, orderFee) { Status = OrderStatus.Invalid });
+                OnOrderEvent(new OrderEvent(order.QCOrder, DateTime.UtcNow, CashAmount.Zero) { Status = OrderStatus.Invalid });
 
                 string message = _previousResponseRaw;
                 if (response != null && response.Errors != null && !response.Errors.Errors.IsNullOrEmpty())
@@ -1330,8 +1327,7 @@ namespace QuantConnect.Brokerages.Tradier
             {
                 var qcOrder = _orderProvider.GetOrderByBrokerageId(updatedOrder.Id);
                 qcOrder.PriceCurrency = "USD";
-                const int orderFee = 0;
-                var fill = new OrderEvent(qcOrder, DateTime.UtcNow, orderFee, "Tradier Fill Event")
+                var fill = new OrderEvent(qcOrder, DateTime.UtcNow, CashAmount.Zero, "Tradier Fill Event")
                 {
                     Status = ConvertStatus(updatedOrder.Status),
                     // this is guaranteed to be wrong in the event we have multiple fills within our polling interval,
@@ -1352,7 +1348,9 @@ namespace QuantConnect.Brokerages.Tradier
                 {
                     cachedOrder.EmittedOrderFee = true;
                     var security = _securityProvider.GetSecurity(qcOrder.Symbol);
-                    fill.OrderFee = security.FeeModel.GetOrderFee(security, qcOrder);
+                    var converter = new IdentityCurrencyConverter(CashBook.AccountCurrency);
+                    var context = new OrderFeeContext(security, qcOrder, converter);
+                    fill.OrderFee = security.FeeModel.GetOrderFee(context).Value;
                 }
 
                 // if we filled the order and have another contingent order waiting, submit it
@@ -1394,14 +1392,14 @@ namespace QuantConnect.Brokerages.Tradier
                                         Log.Error("TradierBrokerage.SubmitContingentOrder(): Failed to submit contingent order.");
                                         var message = string.Format("{0} Failed submitting contingent order for QC id: {1} Filled Tradier Order id: {2}", qcOrder.Symbol, qcOrder.Id, updatedOrder.Id);
                                         OnMessage(new BrokerageMessageEvent(BrokerageMessageType.Warning, "ContingentOrderFailed", message));
-                                        OnOrderEvent(new OrderEvent(qcOrder, DateTime.UtcNow, orderFee) { Status = OrderStatus.Canceled });
+                                        OnOrderEvent(new OrderEvent(qcOrder, DateTime.UtcNow, CashAmount.Zero) { Status = OrderStatus.Canceled });
                                     }
                                 }
                                 catch (Exception err)
                                 {
                                     Log.Error(err);
                                     OnMessage(new BrokerageMessageEvent(BrokerageMessageType.Warning, "ContingentOrderError", "An error ocurred while trying to submit an Tradier contingent order: " + err));
-                                    OnOrderEvent(new OrderEvent(qcOrder, DateTime.UtcNow, orderFee) { Status = OrderStatus.Canceled });
+                                    OnOrderEvent(new OrderEvent(qcOrder, DateTime.UtcNow, CashAmount.Zero) { Status = OrderStatus.Canceled });
                                 }
                                 finally
                                 {

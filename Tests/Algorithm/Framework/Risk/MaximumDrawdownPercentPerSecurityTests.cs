@@ -54,7 +54,7 @@ namespace QuantConnect.Tests.Algorithm.Framework.Risk
             );
             security.Setup(m => m.Invested).Returns(invested);
 
-            var holding = new Mock<EquityHolding>(security.Object);
+            var holding = new Mock<EquityHolding>(security.Object, ErrorCurrencyConverter.Instance);
             holding.Setup(m => m.UnrealizedProfit).Returns(unrealizedProfit);
             holding.Setup(m => m.AbsoluteHoldingsCost).Returns(absoluteHoldingsCost);
 

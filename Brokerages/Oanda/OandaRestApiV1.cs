@@ -135,7 +135,6 @@ namespace QuantConnect.Brokerages.Oanda
                 { "units", Convert.ToInt32(order.AbsoluteQuantity).ToString() }
             };
 
-            const int orderFee = 0;
             var marketOrderFillQuantity = 0;
             var marketOrderRemainingQuantity = 0;
             decimal marketOrderFillPrice;
@@ -198,12 +197,12 @@ namespace QuantConnect.Brokerages.Oanda
                     PendingFilledMarketOrders[order.Id] = marketOrderStatus;
                 }
             }
-            OnOrderEvent(new OrderEvent(order, DateTime.UtcNow, orderFee) { Status = OrderStatus.Submitted });
+            OnOrderEvent(new OrderEvent(order, DateTime.UtcNow, CashAmount.Zero) { Status = OrderStatus.Submitted });
 
             // If 'marketOrderRemainingQuantity < order.AbsoluteQuantity' is false it means the order was not even PartiallyFilled, wait for callback
             if (order.Type == OrderType.Market && marketOrderRemainingQuantity < order.AbsoluteQuantity)
             {
-                OnOrderEvent(new OrderEvent(order, DateTime.UtcNow, orderFee)
+                OnOrderEvent(new OrderEvent(order, DateTime.UtcNow, CashAmount.Zero)
                 {
                     Status = marketOrderStatus,
                     FillPrice = marketOrderFillPrice,
@@ -262,7 +261,7 @@ namespace QuantConnect.Brokerages.Oanda
             foreach (var orderId in order.BrokerId)
             {
                 CancelOrder(long.Parse(orderId));
-                OnOrderEvent(new OrderEvent(order, DateTime.UtcNow, 0, "Oanda Cancel Order Event") { Status = OrderStatus.Canceled });
+                OnOrderEvent(new OrderEvent(order, DateTime.UtcNow, CashAmount.Zero, "Oanda Cancel Order Event") { Status = OrderStatus.Canceled });
             }
 
             return true;
@@ -650,8 +649,7 @@ namespace QuantConnect.Brokerages.Oanda
                         {
                             order.PriceCurrency = SecurityProvider.GetSecurity(order.Symbol).SymbolProperties.QuoteCurrency;
 
-                            const int orderFee = 0;
-                            var fill = new OrderEvent(order, DateTime.UtcNow, orderFee, "Oanda Fill Event")
+                            var fill = new OrderEvent(order, DateTime.UtcNow, CashAmount.Zero, "Oanda Fill Event")
                             {
                                 Status = OrderStatus.Filled,
                                 FillPrice = (decimal)data.transaction.price,
@@ -942,7 +940,7 @@ namespace QuantConnect.Brokerages.Oanda
             else
             {
                 OnMessage(new BrokerageMessageEvent(BrokerageMessageType.Warning, "UpdateFailed", "Failed to update Oanda order id: " + orderId + "."));
-                OnOrderEvent(new OrderEvent(ConvertOrder(order), DateTime.UtcNow, 0)
+                OnOrderEvent(new OrderEvent(ConvertOrder(order), DateTime.UtcNow, CashAmount.Zero)
                 {
                     Status = OrderStatus.Invalid,
                     Message = string.Format("Order currently does not exist with order id: {0}.", orderId)

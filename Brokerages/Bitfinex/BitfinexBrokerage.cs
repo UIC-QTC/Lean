@@ -100,7 +100,7 @@ namespace QuantConnect.Brokerages.Bitfinex
             var cancellationSubmitted = false;
             if (response.StatusCode == HttpStatusCode.OK && !(response.Content?.IndexOf("None to cancel", StringComparison.OrdinalIgnoreCase) >= 0))
             {
-                OnOrderEvent(new OrderEvent(order, DateTime.UtcNow, 0, "Bitfinex Order Event") { Status = OrderStatus.CancelPending });
+                OnOrderEvent(new OrderEvent(order, DateTime.UtcNow, CashAmount.Zero, "Bitfinex Order Event") { Status = OrderStatus.CancelPending });
 
                 cancellationSubmitted = true;
             }

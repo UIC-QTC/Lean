@@ -26,6 +26,7 @@ using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using QuantConnect.Securities;
 
 namespace QuantConnect.Brokerages.Bitfinex
 {
@@ -311,7 +312,7 @@ namespace QuantConnect.Brokerages.Bitfinex
                 if (string.IsNullOrEmpty(raw?.Id))
                 {
                     var errorMessage = $"Error parsing response from place order: {response.Content}";
-                    OnOrderEvent(new OrderEvent(order, DateTime.UtcNow, 0, "Bitfinex Order Event") { Status = OrderStatus.Invalid, Message = errorMessage });
+                    OnOrderEvent(new OrderEvent(order, DateTime.UtcNow, CashAmount.Zero, "Bitfinex Order Event") { Status = OrderStatus.Invalid, Message = errorMessage });
                     OnMessage(new BrokerageMessageEvent(BrokerageMessageType.Warning, (int)response.StatusCode, errorMessage));
 
                     UnlockStream();
@@ -331,7 +332,7 @@ namespace QuantConnect.Brokerages.Bitfinex
                 }
 
                 // Generate submitted event
-                OnOrderEvent(new OrderEvent(order, DateTime.UtcNow, 0, "Bitfinex Order Event") { Status = OrderStatus.Submitted });
+                OnOrderEvent(new OrderEvent(order, DateTime.UtcNow, CashAmount.Zero, "Bitfinex Order Event") { Status = OrderStatus.Submitted });
                 Log.Trace($"Order submitted successfully - OrderId: {order.Id}");
 
                 UnlockStream();
@@ -339,7 +340,7 @@ namespace QuantConnect.Brokerages.Bitfinex
             }
 
             var message = $"Order failed, Order Id: {order.Id} timestamp: {order.Time} quantity: {order.Quantity} content: {response.Content}";
-            OnOrderEvent(new OrderEvent(order, DateTime.UtcNow, 0, "Bitfinex Order Event") { Status = OrderStatus.Invalid });
+            OnOrderEvent(new OrderEvent(order, DateTime.UtcNow, CashAmount.Zero, "Bitfinex Order Event") { Status = OrderStatus.Invalid });
             OnMessage(new BrokerageMessageEvent(BrokerageMessageType.Warning, -1, message));
 
             UnlockStream();

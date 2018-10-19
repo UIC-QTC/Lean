@@ -51,6 +51,7 @@ namespace QuantConnect.Brokerages.Backtesting
         private DateTime _lastUpdate = DateTime.MinValue;
         private Queue<DateTime> _assignmentScans;
         private static Random _rand = new Random((int)12345);
+        private IAlgorithm _algorithm;
 
         /// <summary>
         /// We generate a list of time points when we would like to run our simulation. we then return true if the time is in the list.
@@ -58,6 +59,8 @@ namespace QuantConnect.Brokerages.Backtesting
         /// <returns></returns>
         public bool IsReadyToSimulate(IAlgorithm algorithm)
         {
+            _algorithm = algorithm;
+
             if (_lastUpdate == DateTime.MinValue ||
                 algorithm.UtcTime - _lastUpdate > _securitiesRescanPeriod)
             {
@@ -174,16 +177,19 @@ namespace QuantConnect.Brokerages.Backtesting
 
             // Scenario 1 (base): we just close option position
             var marketOrder1 = new MarketOrder(option.Symbol, -holding.Quantity, option.LocalTime.ConvertToUtc(option.Exchange.TimeZone));
-            var orderFee1 = option.FeeModel.GetOrderFee(option, marketOrder1);
+            var context1 = new OrderFeeContext(option, marketOrder1, _algorithm.Portfolio.CashBook);
+            var orderFee1 = option.FeeModel.GetOrderFee(context1).Value.ValueInAccountCurrency.Amount;
 
             var basePnL = (optionPrice - holding.AveragePrice) * -holding.Quantity * option.QuoteCurrency.ConversionRate * option.SymbolProperties.ContractMultiplier - orderFee1;
 
             // Scenario 2 (alternative): we exercise option and then close underlying position
             var optionExerciseOrder2 = new OptionExerciseOrder(option.Symbol, (int)holding.AbsoluteQuantity, option.LocalTime.ConvertToUtc(option.Exchange.TimeZone));
-            var optionOrderFee2 = option.FeeModel.GetOrderFee(option, optionExerciseOrder2);
+            var context2 = new OrderFeeContext(option, optionExerciseOrder2, _algorithm.Portfolio.CashBook);
+            var optionOrderFee2 = option.FeeModel.GetOrderFee(context2).Value.ValueInAccountCurrency.Amount;
 
             var undelyingMarketOrder2 = new MarketOrder(underlying.Symbol, -underlyingQuantity, underlying.LocalTime.ConvertToUtc(underlying.Exchange.TimeZone));
-            var undelyingOrderFee2 = underlying.FeeModel.GetOrderFee(underlying, undelyingMarketOrder2);
+            var context3 = new OrderFeeContext(underlying, undelyingMarketOrder2, _algorithm.Portfolio.CashBook);
+            var undelyingOrderFee2 = underlying.FeeModel.GetOrderFee(context3).Value.ValueInAccountCurrency.Amount;
 
             // calculating P/L of the two transactions (exercise option and then close underlying position)
             var altPnL = (underlyingPrice - option.StrikePrice) * underlyingQuantity * underlying.QuoteCurrency.ConversionRate * option.ContractUnitOfTrade

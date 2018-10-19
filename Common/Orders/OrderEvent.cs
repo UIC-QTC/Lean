@@ -23,7 +23,6 @@ namespace QuantConnect.Orders
     /// </summary>
     public class OrderEvent
     {
-        private decimal orderFee;
         private decimal fillPrice;
         private decimal fillQuantity;
 
@@ -50,11 +49,7 @@ namespace QuantConnect.Orders
         /// <summary>
         /// The fee associated with the order (always positive value).
         /// </summary>
-        public decimal OrderFee
-        {
-            get { return orderFee; }
-            set { orderFee = value.Normalize(); }
-        }
+        public CashAmount OrderFee { get; set; }
 
         /// <summary>
         /// Fill price information about the order
@@ -118,7 +113,7 @@ namespace QuantConnect.Orders
             OrderDirection direction,
             decimal fillPrice,
             decimal fillQuantity,
-            decimal orderFee,
+            CashAmount orderFee,
             string message = ""
             )
         {
@@ -130,7 +125,7 @@ namespace QuantConnect.Orders
             FillPrice = fillPrice;
             FillPriceCurrency = string.Empty;
             FillQuantity = fillQuantity;
-            OrderFee = Math.Abs(orderFee);
+            OrderFee = orderFee;
             Message = message;
             IsAssignment = false;
         }
@@ -142,7 +137,7 @@ namespace QuantConnect.Orders
         /// <param name="utcTime">Date/time of this event</param>
         /// <param name="orderFee">The order fee</param>
         /// <param name="message">Message from exchange or QC.</param>
-        public OrderEvent(Order order, DateTime utcTime, decimal orderFee, string message = "")
+        public OrderEvent(Order order, DateTime utcTime, CashAmount orderFee, string message = "")
         {
             OrderId = order.Id;
             Symbol = order.Symbol;
@@ -155,7 +150,7 @@ namespace QuantConnect.Orders
             FillPriceCurrency = order.PriceCurrency;
 
             UtcTime = utcTime;
-            OrderFee = Math.Abs(orderFee);
+            OrderFee = orderFee;
             Message = message;
             IsAssignment = false;
         }
@@ -174,7 +169,7 @@ namespace QuantConnect.Orders
                 : string.Format("Time: {0} OrderID: {1} Symbol: {2} Status: {3} Quantity: {4} FillPrice: {5} {6}", UtcTime, OrderId, Symbol.Value, Status, FillQuantity, FillPrice.SmartRounding(), FillPriceCurrency);
 
             // attach the order fee so it ends up in logs properly
-            if (OrderFee != 0m) message += string.Format(" OrderFee: {0} {1}", OrderFee, CashBook.AccountCurrency);
+            if (OrderFee.Amount != 0m) message += string.Format(" OrderFee: {0} {1}", OrderFee.Amount.Normalize(), OrderFee.Currency);
 
             // add message from brokerage
             if (!string.IsNullOrEmpty(Message))

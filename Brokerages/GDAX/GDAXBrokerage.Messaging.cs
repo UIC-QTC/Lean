@@ -28,6 +28,7 @@ using RestSharp;
 using System.Text.RegularExpressions;
 using QuantConnect.Logging;
 using QuantConnect.Orders.Fees;
+using QuantConnect.Securities;
 using QuantConnect.Util;
 
 namespace QuantConnect.Brokerages.GDAX
@@ -621,14 +622,15 @@ namespace QuantConnect.Brokerages.GDAX
         /// <summary>
         /// Returns the fee paid for a total or partial order fill
         /// </summary>
-        public static decimal GetFillFee(Symbol symbol, decimal fillPrice, decimal fillQuantity, bool isMaker)
+        public static CashAmount GetFillFee(Symbol symbol, decimal fillPrice, decimal fillQuantity, bool isMaker)
         {
             if (isMaker)
             {
-                return 0;
+                return CashAmount.Zero;
             }
 
-            return fillPrice * Math.Abs(fillQuantity) * GDAXFeeModel.TakerFee;
+            var fee = fillPrice * Math.Abs(fillQuantity) * GDAXFeeModel.TakerFee;
+            return new CashAmount(fee, CashBook.AccountCurrency, new IdentityCurrencyConverter(CashBook.AccountCurrency));
         }
     }
 }
