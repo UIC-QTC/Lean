@@ -13,6 +13,8 @@
  * limitations under the License.
 */
 
+using QuantConnect.Securities;
+
 namespace QuantConnect.Orders.Fees
 {
     /// <summary>
@@ -23,15 +25,15 @@ namespace QuantConnect.Orders.Fees
         /// <summary>
         /// Gets the order fee
         /// </summary>
-        public decimal Value { get; }
+        public CashAmount Value { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OrderFee"/> class
         /// </summary>
-        /// <param name="value">The order fee</param>
-        public OrderFee(decimal value)
+        /// <param name="orderFee">The order fee</param>
+        public OrderFee(CashAmount orderFee)
         {
-            Value = value;
+            Value = orderFee;
         }
     }
 }

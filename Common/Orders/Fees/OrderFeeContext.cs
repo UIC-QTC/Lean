@@ -33,14 +33,22 @@ namespace QuantConnect.Orders.Fees
         public Order Order { get; }
 
         /// <summary>
+        /// Gets the currency converter used for converting cash amounts into the account currency
+        /// </summary>
+        public ICurrencyConverter CurrencyConverter { get; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="OrderFeeContext"/> class
         /// </summary>
         /// <param name="security">The security</param>
         /// <param name="order">The order</param>
-        public OrderFeeContext(Security security, Order order)
+        /// <param name="currencyConverter">The currency converter used for converting
+        /// cash amounts into the account currency</param>
+        public OrderFeeContext(Security security, Order order, ICurrencyConverter currencyConverter)
         {
             Security = security;
             Order = order;
+            CurrencyConverter = currencyConverter;
         }
 
         /// <summary>
@@ -50,7 +58,7 @@ namespace QuantConnect.Orders.Fees
         /// <returns>The order fee</returns>
         public OrderFee ResultInAccountCurrency(decimal orderFee)
         {
-            return new OrderFee(orderFee);
+            return new OrderFee(new CashAmount(orderFee, CurrencyConverter.AccountCurrency, CurrencyConverter));
         }
 
         /// <summary>
@@ -62,7 +70,7 @@ namespace QuantConnect.Orders.Fees
         public OrderFee Result(decimal orderFee, string currency)
         {
             // TODO: Properly account for 'currency' - not accounted for currently as only performing mechanical refactoring
-            return new OrderFee(orderFee);
+            return new OrderFee(new CashAmount(orderFee, currency, CurrencyConverter));
         }
     }
 }

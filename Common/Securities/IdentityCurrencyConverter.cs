@@ -31,8 +31,13 @@ namespace QuantConnect.Securities
         /// <param name="accountCurrency">The algorithm's account currency</param>
         public IdentityCurrencyConverter(string accountCurrency)
         {
-            this._accountCurrency = accountCurrency;
+            _accountCurrency = accountCurrency;
         }
+
+        /// <summary>
+        /// Gets the account currency of the algorithm's portfolio
+        /// </summary>
+        public string AccountCurrency => _accountCurrency;
 
         /// <summary>
         /// Converts a cash amount to the account currency.

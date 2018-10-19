@@ -32,8 +32,16 @@ namespace QuantConnect.Orders.Fees
         /// <returns>The cost of the order in units of the account currency</returns>
         public static decimal GetOrderFee(this IFeeModel model, Security security, Order order)
         {
-            var context = new OrderFeeContext(security, order);
-            return model.GetOrderFee(context).Value;
+            // invoking this extension assumes the fee is in the account currency
+            var converter = new IdentityCurrencyConverter(CashBook.AccountCurrency);
+            var context = new OrderFeeContext(security, order, converter);
+            var feeCashAmount = model.GetOrderFee(context).Value;
+
+            // this will throw if it's not already in the account currency
+            // as a means of confirming pre-conditions of this method
+            var feeInAccountCurrency = feeCashAmount.ValueInAccountCurrency;
+
+            return feeInAccountCurrency.Amount;
         }
     }
 }
