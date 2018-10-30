@@ -56,5 +56,24 @@ namespace QuantConnect.Securities
             // existing implementations assume certain non-account currency units, so return raw value
             return buyingPower.Value;
         }
+
+        /// <summary>
+        /// Check if there is sufficient buying power to execute this order.
+        /// </summary>
+        /// <param name="model">The <see cref="IBuyingPowerModel"/></param>
+        /// <param name="portfolio">The algorithm's portfolio</param>
+        /// <param name="security">The security to be traded</param>
+        /// <param name="order">The order to be checked</param>
+        /// <returns>Returns buying power information for an order</returns>
+        public static HasSufficientBuyingPowerForOrderResult HasSufficientBuyingPowerForOrder(
+            this IBuyingPowerModel model,
+            SecurityPortfolioManager portfolio,
+            Security security,
+            Order order
+            )
+        {
+            var context = new SufficientBuyingPowerForOrderContext(portfolio, security, order);
+            return model.HasSufficientBuyingPowerForOrder(context);
+        }
     }
 }

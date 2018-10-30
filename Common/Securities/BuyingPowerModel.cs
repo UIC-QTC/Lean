@@ -138,20 +138,20 @@ namespace QuantConnect.Securities
         /// <summary>
         /// Check if there is sufficient buying power to execute this order.
         /// </summary>
-        /// <param name="portfolio">The algorithm's portfolio</param>
-        /// <param name="security">The security to be traded</param>
-        /// <param name="order">The order to be checked</param>
+        /// <param name="context">A context object containing the algorithm's portfolio, the order to check and the order's security</param>
         /// <returns>Returns buying power information for an order</returns>
         public virtual HasSufficientBuyingPowerForOrderResult HasSufficientBuyingPowerForOrder(
-            SecurityPortfolioManager portfolio,
-            Security security,
-            Order order
+            SufficientBuyingPowerForOrderContext context
             )
         {
+            var portfolio = context.Portfolio;
+            var security = context.Security;
+            var order = context.Order;
+
             // short circuit the div 0 case
             if (order.Quantity == 0)
             {
-                return new HasSufficientBuyingPowerForOrderResult(true);
+                return context.HasSufficientBuyingPower();
             }
 
             var ticket = portfolio.Transactions.GetOrderTicket(order.Id);
@@ -159,7 +159,7 @@ namespace QuantConnect.Securities
             {
                 var reason = $"Null order ticket for id: {order.Id}";
                 Log.Error($"SecurityMarginModel.HasSufficientBuyingPowerForOrder(): {reason}");
-                return new HasSufficientBuyingPowerForOrderResult(false, reason);
+                return context.HasInsufficientBuyingPower(reason);
             }
 
             if (order.Type == OrderType.OptionExercise)
@@ -182,16 +182,18 @@ namespace QuantConnect.Securities
                     };
 
                     // we continue with this call for underlying
-                    return underlying.BuyingPowerModel.HasSufficientBuyingPowerForOrder(portfolio, underlying, newOrder);
+                    return underlying.BuyingPowerModel.HasSufficientBuyingPowerForOrder(
+                        new SufficientBuyingPowerForOrderContext(portfolio, security, newOrder)
+                    );
                 }
 
-                return new HasSufficientBuyingPowerForOrderResult(true);
+                return context.HasSufficientBuyingPower();
             }
 
             // When order only reduces or closes a security position, capital is always sufficient
             if (security.Holdings.Quantity * order.Quantity < 0 && Math.Abs(security.Holdings.Quantity) >= Math.Abs(order.Quantity))
             {
-                return new HasSufficientBuyingPowerForOrderResult(true);
+                return context.HasSufficientBuyingPower();
             }
 
             var freeMargin = GetMarginRemaining(new MarginRemainingContext(portfolio, security, order.Direction)).Value;
@@ -208,10 +210,10 @@ namespace QuantConnect.Securities
                     $"Free Margin: {freeMargin.Normalize()}";
 
                 Log.Error($"SecurityMarginModel.HasSufficientBuyingPowerForOrder(): {reason}");
-                return new HasSufficientBuyingPowerForOrderResult(false, reason);
+                return context.HasInsufficientBuyingPower(reason);
             }
 
-            return new HasSufficientBuyingPowerForOrderResult(true);
+            return context.HasSufficientBuyingPower();
         }
 
         /// <summary>

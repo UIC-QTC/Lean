@@ -51,16 +51,23 @@ namespace QuantConnect.Securities
         /// <summary>
         /// Check if there is sufficient buying power to execute this order.
         /// </summary>
-        /// <param name="portfolio">The algorithm's portfolio</param>
-        /// <param name="security">The security to be traded</param>
-        /// <param name="order">The order to be checked</param>
+        /// <param name="context">A context object containing the algorithm's portfolio, the order to check and the order's security</param>
         /// <returns>Returns buying power information for an order</returns>
-        public override HasSufficientBuyingPowerForOrderResult HasSufficientBuyingPowerForOrder(SecurityPortfolioManager portfolio, Security security, Order order)
+        public override HasSufficientBuyingPowerForOrderResult HasSufficientBuyingPowerForOrder(
+            SufficientBuyingPowerForOrderContext context
+            )
         {
+            var portfolio = context.Portfolio;
+            var security = context.Security;
+            var order = context.Order;
+
             var baseCurrency = security as IBaseCurrencySymbol;
             if (baseCurrency == null)
             {
-                return new HasSufficientBuyingPowerForOrderResult(false, $"The '{security.Symbol.Value}' security is not supported by this cash model. Currently only SecurityType.Crypto and SecurityType.Forex are supported.");
+                return context.HasInsufficientBuyingPower(
+                    $"The '{security.Symbol.Value}' security is not supported by this cash model. " +
+                    $"Currently only SecurityType.Crypto and SecurityType.Forex are supported."
+                );
             }
 
             decimal totalQuantity;
@@ -81,18 +88,20 @@ namespace QuantConnect.Securities
             // calculate reserved quantity for open orders (in quote or base currency depending on direction)
             var openOrdersReservedQuantity = GetOpenOrdersReservedQuantity(portfolio, security, order);
 
-            bool isSufficient;
-            var reason = string.Empty;
             if (order.Direction == OrderDirection.Sell)
             {
                 // can sell available and non-reserved quantities
-                isSufficient = orderQuantity <= totalQuantity - openOrdersReservedQuantity;
-                if (!isSufficient)
+                if (orderQuantity <= totalQuantity - openOrdersReservedQuantity)
                 {
-                    reason = $"Your portfolio holds {totalQuantity.Normalize()} {baseCurrency.BaseCurrencySymbol}, {openOrdersReservedQuantity.Normalize()} {baseCurrency.BaseCurrencySymbol} of which are reserved for open orders, but your Sell order is for {orderQuantity.Normalize()} {baseCurrency.BaseCurrencySymbol}. Cash Modeling trading does not permit short holdings so ensure you only sell what you have, including any additional open orders.";
+                    return context.HasSufficientBuyingPower();
                 }
 
-                return new HasSufficientBuyingPowerForOrderResult(isSufficient, reason);
+                return context.HasInsufficientBuyingPower(
+                    $"Your portfolio holds {totalQuantity.Normalize()} {baseCurrency.BaseCurrencySymbol}, {openOrdersReservedQuantity.Normalize()} " +
+                    $"{baseCurrency.BaseCurrencySymbol} of which are reserved for open orders, but your Sell order is for {orderQuantity.Normalize()} " +
+                    $"{baseCurrency.BaseCurrencySymbol}. Cash Modeling trading does not permit short holdings so ensure you only sell what you have, " +
+                    $"including any additional open orders."
+                );
             }
 
             if (order.Type == OrderType.Market)
@@ -100,44 +109,62 @@ namespace QuantConnect.Securities
                 // include existing holdings (in quote currency)
                 var holdingsValue =
                     portfolio.CashBook.Convert(
-                        portfolio.CashBook[baseCurrency.BaseCurrencySymbol].Amount, baseCurrency.BaseCurrencySymbol, security.QuoteCurrency.Symbol);
+                        portfolio.CashBook[baseCurrency.BaseCurrencySymbol].Amount,
+                        baseCurrency.BaseCurrencySymbol,
+                        security.QuoteCurrency.Symbol
+                    );
 
                 // find a target value in account currency for buy market orders
                 var targetValue =
-                    portfolio.CashBook.ConvertToAccountCurrency(totalQuantity - openOrdersReservedQuantity + holdingsValue,
-                        security.QuoteCurrency.Symbol);
+                    portfolio.CashBook.ConvertToAccountCurrency(
+                        totalQuantity - openOrdersReservedQuantity + holdingsValue,
+                        security.QuoteCurrency.Symbol
+                    );
 
                 // convert the target into a percent in relation to TPV
                 var targetPercent = portfolio.TotalPortfolioValue == 0 ? 0 : targetValue / portfolio.TotalPortfolioValue;
 
                 // maximum quantity that can be bought (in quote currency)
                 var maximumQuantity =
-                    GetMaximumOrderQuantityForTargetValue(portfolio, security, targetPercent).Quantity * GetOrderPrice(security, order);
+                    GetMaximumOrderQuantityForTargetValue(portfolio, security, targetPercent).Quantity *
+                    GetOrderPrice(security, order);
 
-                isSufficient = orderQuantity <= Math.Abs(maximumQuantity);
-                if (!isSufficient)
+                // requested order quantity less than the max we could order for this security then we're good
+                if (orderQuantity <= Math.Abs(maximumQuantity))
                 {
-                    reason = $"Your portfolio holds {totalQuantity.Normalize()} {security.QuoteCurrency.Symbol}, {openOrdersReservedQuantity.Normalize()} {security.QuoteCurrency.Symbol} of which are reserved for open orders, but your Buy order is for {order.AbsoluteQuantity.Normalize()} {baseCurrency.BaseCurrencySymbol}. Your order requires a total value of {orderQuantity.Normalize()} {security.QuoteCurrency.Symbol}, but only a total value of {Math.Abs(maximumQuantity).Normalize()} {security.QuoteCurrency.Symbol} is available.";
+                    return context.HasSufficientBuyingPower();
                 }
 
-                return new HasSufficientBuyingPowerForOrderResult(isSufficient, reason);
+                return context.HasInsufficientBuyingPower(
+                    $"Your portfolio holds {totalQuantity.Normalize()} {security.QuoteCurrency.Symbol}, {openOrdersReservedQuantity.Normalize()} " +
+                    $"{security.QuoteCurrency.Symbol} of which are reserved for open orders, but your Buy order is for {order.AbsoluteQuantity.Normalize()} " +
+                    $"{baseCurrency.BaseCurrencySymbol}. Your order requires a total value of {orderQuantity.Normalize()} {security.QuoteCurrency.Symbol}, " +
+                    $"but only a total value of {Math.Abs(maximumQuantity).Normalize()} {security.QuoteCurrency.Symbol} is available."
+                );
             }
 
             // for limit orders, add fees to the order cost
             var orderFee = 0m;
             if (order.Type == OrderType.Limit)
             {
+                // TODO : Assumption that fees are in the security's quote currency
+                //        A future change will make the fee models define the currency unit of the fee
                 orderFee = security.FeeModel.GetOrderFee(security, order);
                 orderFee = portfolio.CashBook.Convert(orderFee, CashBook.AccountCurrency, security.QuoteCurrency.Symbol);
             }
 
-            isSufficient = orderQuantity <= totalQuantity - openOrdersReservedQuantity - orderFee;
-            if (!isSufficient)
+            // requested order quantity is less than available quantity minus reserved quantity and minus fees
+            if (orderQuantity <= totalQuantity - openOrdersReservedQuantity - orderFee)
             {
-                reason = $"Your portfolio holds {totalQuantity.Normalize()} {security.QuoteCurrency.Symbol}, {openOrdersReservedQuantity.Normalize()} {security.QuoteCurrency.Symbol} of which are reserved for open orders, but your Buy order is for {order.AbsoluteQuantity.Normalize()} {baseCurrency.BaseCurrencySymbol}. Your order requires a total value of {orderQuantity.Normalize()} {security.QuoteCurrency.Symbol}, but only a total value of {(totalQuantity - openOrdersReservedQuantity - orderFee).Normalize()} {security.QuoteCurrency.Symbol} is available.";
+                return context.HasSufficientBuyingPower();
             }
 
-            return new HasSufficientBuyingPowerForOrderResult(isSufficient, reason);
+            return context.HasInsufficientBuyingPower(
+                $"Your portfolio holds {totalQuantity.Normalize()} {security.QuoteCurrency.Symbol}, {openOrdersReservedQuantity.Normalize()} " +
+                $"{security.QuoteCurrency.Symbol} of which are reserved for open orders, but your Buy order is for {order.AbsoluteQuantity.Normalize()} " +
+                $"{baseCurrency.BaseCurrencySymbol}. Your order requires a total value of {orderQuantity.Normalize()} {security.QuoteCurrency.Symbol}, " +
+                $"but only a total value of {(totalQuantity - openOrdersReservedQuantity - orderFee).Normalize()} {security.QuoteCurrency.Symbol} is available."
+            );
         }
 
         /// <summary>

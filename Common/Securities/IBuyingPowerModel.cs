@@ -13,8 +13,6 @@
  * limitations under the License.
 */
 
-using QuantConnect.Orders;
-
 namespace QuantConnect.Securities
 {
     /// <summary>
@@ -42,11 +40,9 @@ namespace QuantConnect.Securities
         /// <summary>
         /// Check if there is sufficient buying power to execute this order.
         /// </summary>
-        /// <param name="portfolio">The algorithm's portfolio</param>
-        /// <param name="security">The security to be traded</param>
-        /// <param name="order">The order to be checked</param>
+        /// <param name="context">A context object containing the algorithm's portfolio, the order to check and the order's security</param>
         /// <returns>Returns buying power information for an order</returns>
-        HasSufficientBuyingPowerForOrderResult HasSufficientBuyingPowerForOrder(SecurityPortfolioManager portfolio, Security security, Order order);
+        HasSufficientBuyingPowerForOrderResult HasSufficientBuyingPowerForOrder(SufficientBuyingPowerForOrderContext context);
 
         /// <summary>
         /// Get the maximum market order quantity to obtain a position with a given value in account currency

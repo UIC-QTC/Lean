@@ -103,15 +103,13 @@ namespace QuantConnect.Python
         /// <summary>
         /// Check if there is sufficient buying power to execute this order.
         /// </summary>
-        /// <param name="portfolio">The algorithm's portfolio</param>
-        /// <param name="security">The security to be traded</param>
-        /// <param name="order">The order to be checked</param>
+        /// <param name="context">A context object containing the algorithm's portfolio, the order to check and the order's security</param>
         /// <returns>Returns buying power information for an order</returns>
-        public HasSufficientBuyingPowerForOrderResult HasSufficientBuyingPowerForOrder(SecurityPortfolioManager portfolio, Security security, Order order)
+        public HasSufficientBuyingPowerForOrderResult HasSufficientBuyingPowerForOrder(SufficientBuyingPowerForOrderContext context)
         {
             using (Py.GIL())
             {
-                return _model.HasSufficientBuyingPowerForOrder(portfolio, security, order);
+                return _model.HasSufficientBuyingPowerForOrder(context);
             }
         }
 
