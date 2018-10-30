@@ -32,12 +32,12 @@ namespace QuantConnect.Tests.Common.Securities
 
             public new decimal GetInitialMarginRequiredForOrder(Security security, Order order)
             {
-                return base.GetInitialMarginRequiredForOrder(security, order);
+                return base.GetInitialMarginRequiredForOrder(new InitialMarginRequiredForOrderContext(security, order)).Value;
             }
 
             public new decimal GetMarginRemaining(SecurityPortfolioManager portfolio, Security security, OrderDirection direction)
             {
-                return base.GetMarginRemaining(portfolio, security, direction);
+                return base.GetMarginRemaining(new MarginRemainingContext(portfolio, security, direction)).Value;
             }
         }
 

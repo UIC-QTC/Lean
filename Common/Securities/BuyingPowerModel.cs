@@ -194,8 +194,8 @@ namespace QuantConnect.Securities
                 return new HasSufficientBuyingPowerForOrderResult(true);
             }
 
-            var freeMargin = GetMarginRemaining(portfolio, security, order.Direction);
-            var initialMarginRequiredForOrder = GetInitialMarginRequiredForOrder(security, order);
+            var freeMargin = GetMarginRemaining(new MarginRemainingContext(portfolio, security, order.Direction)).Value;
+            var initialMarginRequiredForOrder = GetInitialMarginRequiredForOrder(new InitialMarginRequiredForOrderContext(security, order)).Value;
 
             // pro-rate the initial margin required for order based on how much has already been filled
             var percentUnfilled = (Math.Abs(order.Quantity) - Math.Abs(ticket.QuantityFilled)) / Math.Abs(order.Quantity);
@@ -254,7 +254,7 @@ namespace QuantConnect.Securities
             }
 
             // calculate the total margin available
-            var marginRemaining = GetMarginRemaining(portfolio, security, direction);
+            var marginRemaining = GetMarginRemaining(new MarginRemainingContext(portfolio, security, direction)).Value;
             if (marginRemaining <= 0)
             {
                 var reason = "The portfolio does not have enough margin available.";
@@ -354,8 +354,8 @@ namespace QuantConnect.Securities
         /// <returns>The reserved buying power in account currency</returns>
         public virtual ReservedBuyingPowerForPosition GetReservedBuyingPowerForPosition(ReservedBuyingPowerForPositionContext context)
         {
-            var maintenanceMargin = GetMaintenanceMargin(context.Security);
-            return context.ResultInAccountCurrency(maintenanceMargin);
+            var maintenanceMargin = GetMaintenanceMargin(new MaintenanceMarginContext(context.Security));
+            return context.ResultInAccountCurrency(maintenanceMargin.Value);
         }
 
         /// <summary>
@@ -365,49 +365,52 @@ namespace QuantConnect.Securities
         /// <returns>The buying power available for the trade</returns>
         public virtual BuyingPower GetBuyingPower(BuyingPowerContext context)
         {
-            var marginRemaining = GetMarginRemaining(context.Portfolio, context.Security, context.Direction);
-            return context.ResultInAccountCurrency(marginRemaining);
+            var marginRemaining = GetMarginRemaining(new MarginRemainingContext(context.Portfolio, context.Security, context.Direction));
+            return context.ResultInAccountCurrency(marginRemaining.Value);
         }
 
         /// <summary>
         /// Gets the total margin required to execute the specified order in units of the account currency including fees
         /// </summary>
-        /// <param name="security">The security to compute initial margin for</param>
-        /// <param name="order">The order to be executed</param>
+        /// <param name="context">A context object containing the security and the order</param>
         /// <returns>The total margin in terms of the currency quoted in the order</returns>
-        protected virtual decimal GetInitialMarginRequiredForOrder(Security security, Order order)
+        protected virtual Margin GetInitialMarginRequiredForOrder(InitialMarginRequiredForOrderContext context)
         {
+            var security = context.Security;
+            var order = context.Order;
+
             //Get the order value from the non-abstract order classes (MarketOrder, LimitOrder, StopMarketOrder)
             //Market order is approximated from the current security price and set in the MarketOrder Method in QCAlgorithm.
             var orderFees = security.FeeModel.GetOrderFee(security, order);
 
             var orderValue = order.GetValue(security) * GetInitialMarginRequirement(security);
-            return orderValue + Math.Sign(orderValue) * orderFees;
+            var marginRequired = orderValue + Math.Sign(orderValue) * orderFees;
+            return context.ResultInAccountCurrency(marginRequired);
         }
 
         /// <summary>
         /// Gets the margin currently alloted to the specified holding
         /// </summary>
-        /// <param name="security">The security to compute maintenance margin for</param>
+        /// <param name="context">A context object containing the security</param>
         /// <returns>The maintenance margin required for the </returns>
-        protected virtual decimal GetMaintenanceMargin(Security security)
+        protected virtual Margin GetMaintenanceMargin(MaintenanceMarginContext context)
         {
-            return security.Holdings.AbsoluteHoldingsCost * GetMaintenanceMarginRequirement(security);
+            var security = context.Security;
+            var maintenanceMargin = security.Holdings.AbsoluteHoldingsCost * GetMaintenanceMarginRequirement(security);
+            return context.ResultInAccountCurrency(maintenanceMargin);
         }
 
         /// <summary>
         /// Gets the margin cash available for a trade
         /// </summary>
-        /// <param name="portfolio">The algorithm's portfolio</param>
-        /// <param name="security">The security to be traded</param>
-        /// <param name="direction">The direction of the trade</param>
+        /// <param name="context">A context object containing the algorithm's portfolio, the security and the desired order direction</param>
         /// <returns>The margin available for the trade</returns>
-        protected virtual decimal GetMarginRemaining(
-            SecurityPortfolioManager portfolio,
-            Security security,
-            OrderDirection direction
-            )
+        protected virtual Margin GetMarginRemaining(MarginRemainingContext context)
         {
+            var security = context.Security;
+            var portfolio = context.Portfolio;
+            var direction = context.Direction;
+
             var result = portfolio.MarginRemaining;
 
             if (direction != OrderDirection.Hold)
@@ -415,6 +418,7 @@ namespace QuantConnect.Securities
                 var holdings = security.Holdings;
                 //If the order is in the same direction as holdings, our remaining cash is our cash
                 //In the opposite direction, our remaining cash is 2 x current value of assets + our cash
+                var maintenanceMargin = GetMaintenanceMargin(new MaintenanceMarginContext(security)).Value;
                 if (holdings.IsLong)
                 {
                     switch (direction)
@@ -422,7 +426,7 @@ namespace QuantConnect.Securities
                         case OrderDirection.Sell:
                             result +=
                                 // portion of margin to close the existing position
-                                GetMaintenanceMargin(security) +
+                                maintenanceMargin +
                                 // portion of margin to open the new position
                                 security.Holdings.AbsoluteHoldingsValue * GetInitialMarginRequirement(security);
                             break;
@@ -435,7 +439,7 @@ namespace QuantConnect.Securities
                         case OrderDirection.Buy:
                             result +=
                                 // portion of margin to close the existing position
-                                GetMaintenanceMargin(security) +
+                                maintenanceMargin +
                                 // portion of margin to open the new position
                                 security.Holdings.AbsoluteHoldingsValue * GetInitialMarginRequirement(security);
                             break;
@@ -444,7 +448,8 @@ namespace QuantConnect.Securities
             }
 
             result -= portfolio.TotalPortfolioValue * RequiredFreeBuyingPowerPercent;
-            return result < 0 ? 0 : result;
+            var marginRemaining = result < 0 ? 0 : result;
+            return context.ResultInAccountCurrency(marginRemaining);
         }
 
         /// <summary>
@@ -453,6 +458,173 @@ namespace QuantConnect.Securities
         protected virtual decimal GetInitialMarginRequirement(Security security)
         {
             return _initialMarginRequirement;
+        }
+
+        /// <summary>
+        /// Defines the result for <see cref="GetMaintenanceMargin"/>, <see cref="GetMarginRemaining"/> and <see cref="GetInitialMarginRequiredForOrder"/>
+        /// </summary>
+        protected class Margin
+        {
+            /// <summary>
+            /// Gets the initial margin requirement
+            /// </summary>
+            public decimal Value { get; }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="Margin"/> class
+            /// </summary>
+            /// <param name="value">The initial margin requirement</param>
+            public Margin(decimal value)
+            {
+                Value = value;
+            }
+        }
+
+        /// <summary>
+        /// Defines the parameters for<see cref="BuyingPowerModel.GetMaintenanceMargin"/> and <see cref="BuyingPowerModel.GetMarginRemaining"/>
+        /// </summary>
+        protected class MaintenanceMarginContext
+        {
+            /// <summary>
+            /// Gets the security
+            /// </summary>
+            public Security Security { get; }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="MaintenanceMarginContext"/> class
+            /// </summary>
+            /// <param name="security"></param>
+            public MaintenanceMarginContext(Security security)
+            {
+                Security = security;
+            }
+
+            /// <summary>
+            /// Creates the result using the specified maintenance margin
+            /// </summary>
+            /// <param name="maintenanceMargin">The maintenance margin for the specified security</param>
+            /// <param name="currency">The currency units the margin is denominated in</param>
+            /// <returns>The maintenance margin for the security</returns>
+            public Margin Result(decimal maintenanceMargin, string currency)
+            {
+                // TODO: Properly account for 'currency' - not accounted for currently as only performing mechanical refactoring
+                return new Margin(maintenanceMargin);
+            }
+
+            /// <summary>
+            /// Creates the result using the specified maintenance margin
+            /// </summary>
+            /// <param name="maintenanceMargin">The maintenance margin for the specified security</param>
+            /// <returns>The maintenance margin for the security</returns>
+            public Margin ResultInAccountCurrency(decimal maintenanceMargin)
+            {
+                return new Margin(maintenanceMargin);
+            }
+        }
+
+        /// <summary>
+        /// Defines the parameters for <see cref="BuyingPowerModel.GetMarginRemaining"/>
+        /// </summary>
+        protected class MarginRemainingContext
+        {
+            /// <summary>
+            /// Gets the security
+            /// </summary>
+            public Security Security { get; }
+
+            /// <summary>
+            /// Gets the algorithm's portfolio
+            /// </summary>
+            public SecurityPortfolioManager Portfolio { get; }
+
+            /// <summary>
+            /// Gets the direction in which remaining margin is to be computed
+            /// </summary>
+            public OrderDirection Direction { get; }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="MarginRemainingContext"/> class
+            /// </summary>
+            /// <param name="portfolio"></param>
+            /// <param name="security">The security</param>
+            /// <param name="direction"></param>
+            public MarginRemainingContext(SecurityPortfolioManager portfolio, Security security, OrderDirection direction)
+            {
+                Security = security;
+                Portfolio = portfolio;
+                Direction = direction;
+            }
+
+            /// <summary>
+            /// Creates the result using the specified remaining margin
+            /// </summary>
+            /// <param name="remainingMargin">The remaining margin available for a trade in the requested direction</param>
+            /// <param name="currency">The currency units the margin is denominated in</param>
+            /// <returns>The initial margin required for the order</returns>
+            public Margin Result(decimal remainingMargin, string currency)
+            {
+                // TODO: Properly account for 'currency' - not accounted for currently as only performing mechanical refactoring
+                return new Margin(remainingMargin);
+            }
+
+            /// <summary>
+            /// Creates the result using the specified initial margin in units of the account currency
+            /// </summary>
+            /// <param name="initialMargin">The initial margin required for the order</param>
+            /// <returns>The initial margin required for the order</returns>
+            public Margin ResultInAccountCurrency(decimal initialMargin)
+            {
+                return new Margin(initialMargin);
+            }
+        }
+
+        /// <summary>
+        /// Defines the parameters for <see cref="BuyingPowerModel.GetInitialMarginRequiredForOrder"/>
+        /// </summary>
+        protected class InitialMarginRequiredForOrderContext
+        {
+            /// <summary>
+            /// Gets the security
+            /// </summary>
+            public Security Security { get; }
+
+            /// <summary>
+            /// Gets the order for which initial margin is to be computed
+            /// </summary>
+            public Order Order { get; }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="InitialMarginRequiredForOrderContext"/> class
+            /// </summary>
+            /// <param name="security">The security</param>
+            /// <param name="order">The order to compute initial margin for</param>
+            public InitialMarginRequiredForOrderContext(Security security, Order order)
+            {
+                Security = security;
+                Order = order;
+            }
+
+            /// <summary>
+            /// Creates the result using the specified initial margin
+            /// </summary>
+            /// <param name="initialMargin">The initial margin required for the order</param>
+            /// <param name="currency">The currency units the margin is denominated in</param>
+            /// <returns>The initial margin required for the order</returns>
+            public Margin Result(decimal initialMargin, string currency)
+            {
+                // TODO: Properly account for 'currency' - not accounted for currently as only performing mechanical refactoring
+                return new Margin(initialMargin);
+            }
+
+            /// <summary>
+            /// Creates the result using the specified initial margin in units of the account currency
+            /// </summary>
+            /// <param name="initialMargin">The initial margin required for the order</param>
+            /// <returns>The initial margin required for the order</returns>
+            public Margin ResultInAccountCurrency(decimal initialMargin)
+            {
+                return new Margin(initialMargin);
+            }
         }
     }
 }

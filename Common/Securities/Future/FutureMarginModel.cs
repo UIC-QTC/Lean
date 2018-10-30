@@ -108,46 +108,56 @@ namespace QuantConnect.Securities.Future
         /// <summary>
         /// Gets the total margin required to execute the specified order in units of the account currency including fees
         /// </summary>
-        /// <param name="security">The security to compute initial margin for</param>
-        /// <param name="order">The order to be executed</param>
+        /// <param name="context">A context object containing the security and the order</param>
         /// <returns>The total margin in terms of the currency quoted in the order</returns>
-        protected override decimal GetInitialMarginRequiredForOrder(Security security, Order order)
+        protected override Margin GetInitialMarginRequiredForOrder(InitialMarginRequiredForOrderContext context)
         {
+            var security = context.Security;
+            var order = context.Order;
+
             //Get the order value from the non-abstract order classes (MarketOrder, LimitOrder, StopMarketOrder)
             //Market order is approximated from the current security price and set in the MarketOrder Method in QCAlgorithm.
             var orderFees = security.FeeModel.GetOrderFee(security, order);
             var value = order.GetValue(security);
             var orderValue = value * GetInitialMarginRequirement(security, value);
 
-            return orderValue + Math.Sign(orderValue) * orderFees;
+            var initialMarginRequired = orderValue + Math.Sign(orderValue) * orderFees;
+            return context.ResultInAccountCurrency(initialMarginRequired);
         }
 
         /// <summary>
         /// Gets the margin currently alloted to the specified holding
         /// </summary>
-        /// <param name="security">The security to compute maintenance margin for</param>
+        /// <param name="context">A context object containing the security</param>
         /// <returns>The maintenance margin required for the </returns>
-        protected override decimal GetMaintenanceMargin(Security security)
+        protected override Margin GetMaintenanceMargin(MaintenanceMarginContext context)
         {
+            var security = context.Security;
+
             if (security?.GetLastData() == null || security.Holdings.HoldingsCost == 0m)
-                return 0m;
+            {
+                return context.ResultInAccountCurrency(0m);
+            }
 
             var symbol = security.Symbol;
             var date = security.GetLastData().Time.Date;
             var marginReq = GetCurrentMarginRequirements(symbol, date);
 
-            return marginReq.MaintenanceOvernight * Math.Sign(security.Holdings.HoldingsCost);
+            var maintenanceMargin = marginReq.MaintenanceOvernight * Math.Sign(security.Holdings.HoldingsCost);
+            return context.ResultInAccountCurrency(maintenanceMargin);
         }
 
         /// <summary>
         /// Gets the margin cash available for a trade
         /// </summary>
-        /// <param name="portfolio">The algorithm's portfolio</param>
-        /// <param name="security">The security to be traded</param>
-        /// <param name="direction">The direction of the trade</param>
+        /// <param name="context">A context object containing the algorithm's portfolio, the security and the desired order direction</param>
         /// <returns>The margin available for the trade</returns>
-        protected override decimal GetMarginRemaining(SecurityPortfolioManager portfolio, Security security, OrderDirection direction)
+        protected override Margin GetMarginRemaining(MarginRemainingContext context)
         {
+            var security = context.Security;
+            var portfolio = context.Portfolio;
+            var direction = context.Direction;
+
             var result = portfolio.MarginRemaining;
 
             if (direction != OrderDirection.Hold)
@@ -155,6 +165,7 @@ namespace QuantConnect.Securities.Future
                 var holdings = security.Holdings;
                 //If the order is in the same direction as holdings, our remaining cash is our cash
                 //In the opposite direction, our remaining cash is 2 x current value of assets + our cash
+                var maintenanceMargin = GetMaintenanceMargin(new MaintenanceMarginContext(security)).Value;
                 if (holdings.IsLong)
                 {
                     switch (direction)
@@ -162,7 +173,7 @@ namespace QuantConnect.Securities.Future
                         case OrderDirection.Sell:
                             result +=
                                 // portion of margin to close the existing position
-                                GetMaintenanceMargin(security) +
+                                maintenanceMargin +
                                 // portion of margin to open the new position
                                 security.Holdings.AbsoluteHoldingsValue * GetInitialMarginRequirement(security, security.Holdings.HoldingsValue);
                             break;
@@ -175,7 +186,7 @@ namespace QuantConnect.Securities.Future
                         case OrderDirection.Buy:
                             result +=
                                 // portion of margin to close the existing position
-                                GetMaintenanceMargin(security) +
+                                maintenanceMargin +
                                 // portion of margin to open the new position
                                 security.Holdings.AbsoluteHoldingsValue * GetInitialMarginRequirement(security, security.Holdings.HoldingsValue);
                             break;
@@ -184,7 +195,8 @@ namespace QuantConnect.Securities.Future
             }
 
             result -= portfolio.TotalPortfolioValue * RequiredFreeBuyingPowerPercent;
-            return result < 0 ? 0 : result;
+            var marginRemaining = result < 0 ? 0 : result;
+            return context.ResultInAccountCurrency(marginRemaining);
         }
 
         /// <summary>

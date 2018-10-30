@@ -42,12 +42,12 @@ namespace QuantConnect.Tests.Common.Securities
 
             public new decimal GetInitialMarginRequiredForOrder(Security security, Order order)
             {
-                return base.GetInitialMarginRequiredForOrder(security, order);
+                return base.GetInitialMarginRequiredForOrder(new InitialMarginRequiredForOrderContext(security, order)).Value;
             }
 
             public new decimal GetMaintenanceMargin(Security security)
             {
-                return base.GetMaintenanceMargin(security);
+                return base.GetMaintenanceMargin(new MaintenanceMarginContext(security)).Value;
             }
         }
 

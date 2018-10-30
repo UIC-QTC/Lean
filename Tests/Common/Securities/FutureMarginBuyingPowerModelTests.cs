@@ -31,7 +31,7 @@ namespace QuantConnect.Tests.Common.Securities
         {
             public new decimal GetMaintenanceMargin(Security security)
             {
-                return base.GetMaintenanceMargin(security);
+                return base.GetMaintenanceMargin(new MaintenanceMarginContext(security)).Value;
             }
         }
 
