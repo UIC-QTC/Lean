@@ -19,6 +19,7 @@ using System.IO;
 using System.Linq;
 using QuantConnect.Logging;
 using QuantConnect.Orders;
+using QuantConnect.Orders.Fees;
 
 namespace QuantConnect.Securities.Future
 {

@@ -35,6 +35,7 @@ using QuantConnect.Algorithm;
 using QuantConnect.Data.UniverseSelection;
 using QuantConnect.Interfaces;
 using QuantConnect.Tests.Engine.DataFeeds;
+using QuantConnect.Orders.Fees;
 
 namespace QuantConnect.Tests.Common.Securities
 {

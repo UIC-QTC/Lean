@@ -13,19 +13,27 @@
  * limitations under the License.
 */
 
+using QuantConnect.Securities;
+
 namespace QuantConnect.Orders.Fees
 {
     /// <summary>
-    /// Represents a model the simulates order fees
+    /// Provides extension methods as backwards compatibility shims
     /// </summary>
-    public interface IFeeModel
+    public static class FeeModelExtensions
     {
         /// <summary>
         /// Gets the order fee associated with the specified order. This returns the cost
         /// of the transaction in the account currency
         /// </summary>
-        /// <param name="context">A context object containing the security and order</param>
+        /// <param name="model">The fee model</param>
+        /// <param name="security">The security matching the order</param>
+        /// <param name="order">The order to compute fees for</param>
         /// <returns>The cost of the order in units of the account currency</returns>
-        OrderFee GetOrderFee(OrderFeeContext context);
+        public static decimal GetOrderFee(this IFeeModel model, Security security, Order order)
+        {
+            var context = new OrderFeeContext(security, order);
+            return model.GetOrderFee(context).Value;
+        }
     }
 }

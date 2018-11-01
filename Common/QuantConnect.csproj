@@ -191,6 +191,9 @@
     <Compile Include="Interfaces\ISecurityInitializerProvider.cs" />
     <Compile Include="Interfaces\ISecurityService.cs" />
     <Compile Include="Interfaces\ISubscriptionDataConfigProvider.cs" />
+    <Compile Include="Orders\Fees\FeeModelExtensions.cs" />
+    <Compile Include="Orders\Fees\OrderFee.cs" />
+    <Compile Include="Orders\Fees\OrderFeeContext.cs" />
     <Compile Include="Interfaces\ISubscriptionDataConfigService.cs" />
     <Compile Include="Interfaces\ITimeKeeper.cs" />
     <Compile Include="IsolatorLimitResult.cs" />

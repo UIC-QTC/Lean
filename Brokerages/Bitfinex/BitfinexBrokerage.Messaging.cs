@@ -19,6 +19,7 @@ using QuantConnect.Data.Market;
 using QuantConnect.Interfaces;
 using QuantConnect.Logging;
 using QuantConnect.Orders;
+using QuantConnect.Orders.Fees;
 using QuantConnect.Securities;
 using QuantConnect.Util;
 using RestSharp;

@@ -40,14 +40,13 @@ namespace QuantConnect.Python
         /// Gets the order fee associated with the specified order. This returns the cost
         /// of the transaction in the account currency
         /// </summary>
-        /// <param name="security">The security matching the order</param>
-        /// <param name="order">The order to compute fees for</param>
+        /// <param name="context">A context object containing the security and order</param>
         /// <returns>The cost of the order in units of the account currency</returns>
-        public decimal GetOrderFee(Security security, Order order)
+        public OrderFee GetOrderFee(OrderFeeContext context)
         {
             using (Py.GIL())
             {
-                return _model.GetOrderFee(security, order);
+                return _model.GetOrderFee(context);
             }
         }
     }

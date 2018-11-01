@@ -1,11 +1,11 @@
 /*
  * QUANTCONNECT.COM - Democratizing Finance, Empowering Individuals.
  * Lean Algorithmic Trading Engine v2.0. Copyright 2014 QuantConnect Corporation.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); 
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,8 +15,6 @@
 
 using System;
 using QuantConnect.Orders.Fills;
-using QuantConnect.Securities;
-
 
 namespace QuantConnect.Orders.Fees
 {
@@ -28,9 +26,9 @@ namespace QuantConnect.Orders.Fees
         private readonly decimal _forexCommissionRate;
         private readonly decimal _forexMinimumOrderFee;
 
-        // option commission function takes number of contracts and the size of the option premium and returns total commission 
+        // option commission function takes number of contracts and the size of the option premium and returns total commission
         private readonly Func<decimal, decimal, decimal>  _optionsCommissionFunc;
-   
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ImmediateFillModel"/>
         /// </summary>
@@ -46,11 +44,13 @@ namespace QuantConnect.Orders.Fees
         /// Gets the order fee associated with the specified order. This returns the cost
         /// of the transaction in the account currency
         /// </summary>
-        /// <param name="security">The security matching the order</param>
-        /// <param name="order">The order to compute fees for</param>
+        /// <param name="context">A context object containing the security and order</param>
         /// <returns>The cost of the order in units of the account currency</returns>
-        public decimal GetOrderFee(Security security, Order order)
+        public OrderFee GetOrderFee(OrderFeeContext context)
         {
+            var security = context.Security;
+            var order = context.Order;
+
             // Option exercise for equity options is free of charge
             if (order.Type == OrderType.OptionExercise)
             {
@@ -59,25 +59,29 @@ namespace QuantConnect.Orders.Fees
                 if (optionOrder.Symbol.ID.SecurityType == SecurityType.Option &&
                     optionOrder.Symbol.ID.Underlying.SecurityType == SecurityType.Equity)
                 {
-                    return 0m;
+                    return context.Zero();
                 }
             }
 
+            var fee = 0m;
             switch (security.Type)
             {
                 case SecurityType.Forex:
                     // get the total order value in the account currency
                     var totalOrderValue = order.GetValue(security);
-                    var fee = Math.Abs(_forexCommissionRate*totalOrderValue);
-                    return Math.Max(_forexMinimumOrderFee, fee);
+                    fee = Math.Abs(_forexCommissionRate*totalOrderValue);
+                    fee = Math.Max(_forexMinimumOrderFee, fee);
+                    break;
 
                 case SecurityType.Option:
                     // applying commission function to the order
-                    return _optionsCommissionFunc(order.AbsoluteQuantity, order.Price);
+                    fee = _optionsCommissionFunc(order.AbsoluteQuantity, order.Price);
+                    break;
 
                 case SecurityType.Future:
                     // currently we treat all futures as USD denominated generic US futures
-                    return order.AbsoluteQuantity * (0.85m + 1.0m);
+                    fee = order.AbsoluteQuantity * (0.85m + 1.0m);
+                    break;
 
                 case SecurityType.Equity:
                     var tradeValue = Math.Abs(order.GetValue(security));
@@ -98,11 +102,12 @@ namespace QuantConnect.Orders.Fees
                     }
 
                     //Always return a positive fee.
-                    return Math.Abs(tradeFee);
+                    fee = Math.Abs(tradeFee);
+                    break;
             }
 
             // all other types default to zero fees
-            return 0m;
+            return context.ResultInAccountCurrency(fee);
         }
 
         /// <summary>
@@ -139,17 +144,17 @@ namespace QuantConnect.Orders.Fees
         private static void ProcessOptionsRateSchedule(decimal monthlyOptionsTradeAmountInContracts, out Func<decimal, decimal, decimal> optionsCommissionFunc)
         {
             const decimal bp = 0.0001m;
-            if (monthlyOptionsTradeAmountInContracts <= 10000)      
+            if (monthlyOptionsTradeAmountInContracts <= 10000)
             {
                 optionsCommissionFunc = (orderSize, premium) =>
                 {
-                    var commissionRate = premium >= 0.1m ? 
-                                            0.7m : 
+                    var commissionRate = premium >= 0.1m ?
+                                            0.7m :
                                             (0.05m <= premium && premium < 0.1m ? 0.5m : 0.25m);
-                    return Math.Min(orderSize * commissionRate, 1.0m);                                                        
+                    return Math.Min(orderSize * commissionRate, 1.0m);
                 };
             }
-            else if (monthlyOptionsTradeAmountInContracts <= 50000) 
+            else if (monthlyOptionsTradeAmountInContracts <= 50000)
             {
                 optionsCommissionFunc = (orderSize, premium) =>
                 {
