@@ -220,24 +220,24 @@ namespace QuantConnect.Securities
         /// Get the maximum market order quantity to obtain a position with a given value in account currency.
         /// Will not take into account buying power.
         /// </summary>
-        /// <param name="portfolio">The algorithm's portfolio</param>
-        /// <param name="security">The security to be traded</param>
-        /// <param name="target">Target percentage holdings</param>
+        /// <param name="context">A context object containing the algorithm's portfolio, the target holdings as percentage of total portfolio value and the order's security</param>
         /// <returns>Returns the maximum allowed market order quantity and if zero, also the reason</returns>
         public virtual GetMaximumOrderQuantityForTargetValueResult GetMaximumOrderQuantityForTargetValue(
-            SecurityPortfolioManager portfolio,
-            Security security,
-            decimal target
+            MaximumOrderQuantityForTargetValueContext context
             )
         {
+            var portfolio = context.Portfolio;
+            var security = context.Security;
+            var target = context.Target;
+
             // adjust target portfolio value to comply with required Free Buying Power Percent
-            var targetPortfolioValue =
-                target * (portfolio.TotalPortfolioValue - portfolio.TotalPortfolioValue * RequiredFreeBuyingPowerPercent);
+            var totalPortfolioValueLessFreeBuyingPowerPercent = portfolio.TotalPortfolioValue - portfolio.TotalPortfolioValue * RequiredFreeBuyingPowerPercent;
+            var targetPortfolioValue = target * totalPortfolioValueLessFreeBuyingPowerPercent;
 
             // if targeting zero, simply return the negative of the quantity
             if (targetPortfolioValue == 0)
             {
-                return new GetMaximumOrderQuantityForTargetValueResult(-security.Holdings.Quantity, string.Empty, false);
+                return context.Result(-security.Holdings.Quantity);
             }
 
             var currentHoldingsValue = security.Holdings.HoldingsValue;
@@ -250,17 +250,19 @@ namespace QuantConnect.Securities
             var unitPrice = new MarketOrder(security.Symbol, 1, DateTime.UtcNow).GetValue(security);
             if (unitPrice == 0)
             {
-                var reason = $"The price of the {security.Symbol.Value} security is zero because it does not have any market " +
-                    "data yet. When the security price is set this security will be ready for trading.";
-                return new GetMaximumOrderQuantityForTargetValueResult(0, reason);
+                return context.Error(
+                    $"The price of the {security.Symbol.Value} security is zero because it does not have any market " +
+                    "data yet. When the security price is set this security will be ready for trading."
+                );
             }
 
             // calculate the total margin available
             var marginRemaining = GetMarginRemaining(new MarginRemainingContext(portfolio, security, direction)).Value;
             if (marginRemaining <= 0)
             {
-                var reason = "The portfolio does not have enough margin available.";
-                return new GetMaximumOrderQuantityForTargetValueResult(0, reason);
+                return context.Error(
+                    "The portfolio does not have enough margin available."
+                );
             }
 
             // continue iterating while we do not have enough margin for the order
@@ -273,9 +275,9 @@ namespace QuantConnect.Securities
             orderQuantity -= orderQuantity % security.SymbolProperties.LotSize;
             if (orderQuantity == 0)
             {
-                var reason = $"The order quantity is less than the lot size of {security.SymbolProperties.LotSize} " +
-                    "and has been rounded to zero.";
-                return new GetMaximumOrderQuantityForTargetValueResult(0, reason, false);
+                return context.Zero(
+                    $"The order quantity is less than the lot size of {security.SymbolProperties.LotSize} and has been rounded to zero."
+                );
             }
 
             var loopCount = 0;
@@ -300,10 +302,11 @@ namespace QuantConnect.Securities
 
                 if (orderQuantity <= 0)
                 {
-                    var reason = $"The order quantity is less than the lot size of {security.SymbolProperties.LotSize} " +
+                    return context.Error(
+                        $"The order quantity is less than the lot size of {security.SymbolProperties.LotSize} " +
                         $"and has been rounded to zero.Target order value {targetOrderValue}. Order fees " +
-                        $"{orderFees}. Order quantity {orderQuantity}.";
-                    return new GetMaximumOrderQuantityForTargetValueResult(0, reason);
+                        $"{orderFees}. Order quantity {orderQuantity}."
+                    );
                 }
 
                 // generate the order
@@ -329,11 +332,11 @@ namespace QuantConnect.Securities
                     // Start safe check after first loop
                     if (lastOrderQuantity == orderQuantity)
                     {
-                        var message = "GetMaximumOrderQuantityForTargetValue failed to converge to target order value " +
-                            $"{targetOrderValue}. Current order value is {orderValue}. Order quantity {orderQuantity}. " +
-                            $"Lot size is {security.SymbolProperties.LotSize}. Order fees {orderFees}. Security symbol " +
-                            $"{security.Symbol}";
-                        throw new Exception(message);
+                        throw new Exception(
+                            $"GetMaximumOrderQuantityForTargetValue failed to converge to target order value {targetOrderValue}. " +
+                            $"Current order value is {orderValue}. Order quantity {orderQuantity}. Lot size is {security.SymbolProperties.LotSize}. " +
+                            $"Order fees {orderFees}. Security symbol {security.Symbol}"
+                        );
                     }
 
                     lastOrderQuantity = orderQuantity;
@@ -346,7 +349,8 @@ namespace QuantConnect.Securities
             while (loopCount < 2 || orderValue > targetOrderValue);
 
             // add directionality back in
-            return new GetMaximumOrderQuantityForTargetValueResult((direction == OrderDirection.Sell ? -1 : 1) * orderQuantity);
+            orderQuantity = (direction == OrderDirection.Sell ? -1 : 1) * orderQuantity;
+            return context.Result(orderQuantity);
         }
 
         /// <summary>

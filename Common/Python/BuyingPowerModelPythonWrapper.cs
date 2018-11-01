@@ -75,15 +75,15 @@ namespace QuantConnect.Python
         /// <summary>
         /// Get the maximum market order quantity to obtain a position with a given value in account currency
         /// </summary>
-        /// <param name="portfolio">The algorithm's portfolio</param>
-        /// <param name="security">The security to be traded</param>
-        /// <param name="target">Target percentage holdings</param>
+        /// <param name="context">A context object containing the algorithm's portfolio, the target holdings as percentage of total portfolio value and the order's security</param>
         /// <returns>Returns the maximum allowed market order quantity and if zero, also the reason</returns>
-        public GetMaximumOrderQuantityForTargetValueResult GetMaximumOrderQuantityForTargetValue(SecurityPortfolioManager portfolio, Security security, decimal target)
+        public GetMaximumOrderQuantityForTargetValueResult GetMaximumOrderQuantityForTargetValue(
+            MaximumOrderQuantityForTargetValueContext context
+            )
         {
             using (Py.GIL())
             {
-                return _model.GetMaximumOrderQuantityForTargetValue(portfolio, security, target);
+                return _model.GetMaximumOrderQuantityForTargetValue(context);
             }
         }
 

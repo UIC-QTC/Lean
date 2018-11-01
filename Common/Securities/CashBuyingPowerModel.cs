@@ -124,10 +124,11 @@ namespace QuantConnect.Securities
                 // convert the target into a percent in relation to TPV
                 var targetPercent = portfolio.TotalPortfolioValue == 0 ? 0 : targetValue / portfolio.TotalPortfolioValue;
 
+                // TODO : Ensure result defines currency units and ensure proper handling upon consumption
                 // maximum quantity that can be bought (in quote currency)
-                var maximumQuantity =
-                    GetMaximumOrderQuantityForTargetValue(portfolio, security, targetPercent).Quantity *
-                    GetOrderPrice(security, order);
+                var maxQuantityContext = new MaximumOrderQuantityForTargetValueContext(portfolio, security, targetPercent);
+                var maximumQuantity = GetMaximumOrderQuantityForTargetValue(maxQuantityContext).Quantity
+                    * GetOrderPrice(security, order);
 
                 // requested order quantity less than the max we could order for this security then we're good
                 if (orderQuantity <= Math.Abs(maximumQuantity))
@@ -170,29 +171,37 @@ namespace QuantConnect.Securities
         /// <summary>
         /// Get the maximum market order quantity to obtain a position with a given value in account currency. Will not take into account buying power.
         /// </summary>
-        /// <param name="portfolio">The algorithm's portfolio</param>
-        /// <param name="security">The security to be traded</param>
-        /// <param name="target">Target percentage holdings</param>
+        /// <param name="context">A context object containing the algorithm's portfolio, the target holdings as percentage of total portfolio value and the order's security</param>
         /// <returns>Returns the maximum allowed market order quantity and if zero, also the reason</returns>
-        public override GetMaximumOrderQuantityForTargetValueResult GetMaximumOrderQuantityForTargetValue(SecurityPortfolioManager portfolio, Security security, decimal target)
+        public override GetMaximumOrderQuantityForTargetValueResult GetMaximumOrderQuantityForTargetValue(
+            MaximumOrderQuantityForTargetValueContext context
+            )
         {
+            var portfolio = context.Portfolio;
+            var security = context.Security;
+            var target = context.Target;
+
             var targetPortfolioValue = target * portfolio.TotalPortfolioValue;
             // no shorting allowed
             if (targetPortfolioValue < 0)
             {
-                return new GetMaximumOrderQuantityForTargetValueResult(0, "The cash model does not allow shorting.");
+                return context.Error(
+                    "The cash model does not allow shorting."
+                );
             }
 
             var baseCurrency = security as IBaseCurrencySymbol;
             if (baseCurrency == null)
             {
-                return new GetMaximumOrderQuantityForTargetValueResult(0, "The security type must be SecurityType.Crypto or SecurityType.Forex.");
+                return context.Error(
+                    "The security type must be SecurityType.Crypto or SecurityType.Forex."
+                );
             }
 
             // if target value is zero, return amount of base currency available to sell
             if (targetPortfolioValue == 0)
             {
-                return new GetMaximumOrderQuantityForTargetValueResult(-portfolio.CashBook[baseCurrency.BaseCurrencySymbol].Amount);
+                return context.Result(-portfolio.CashBook[baseCurrency.BaseCurrencySymbol].Amount);
             }
 
             // convert base currency cash to account currency
@@ -217,16 +226,25 @@ namespace QuantConnect.Securities
             {
                 if (security.QuoteCurrency.ConversionRate == 0)
                 {
-                    return new GetMaximumOrderQuantityForTargetValueResult(0, $"The internal cash feed required for converting {security.QuoteCurrency.Symbol} to {CashBook.AccountCurrency} does not have any data yet (or market may be closed).");
+                    return context.Error(
+                        $"The internal cash feed required for converting {security.QuoteCurrency.Symbol} " +
+                        $"to {CashBook.AccountCurrency} does not have any data yet (or market may be closed)."
+                    );
                 }
 
                 if (security.SymbolProperties.ContractMultiplier == 0)
                 {
-                    return new GetMaximumOrderQuantityForTargetValueResult(0, $"The contract multiplier for the {security.Symbol.Value} security is zero. The symbol properties database may be out of date.");
+                    return context.Error(
+                        $"The contract multiplier for the {security.Symbol.Value} security is zero. " +
+                        $"The symbol properties database may be out of date."
+                    );
                 }
 
                 // security.Price == 0
-                return new GetMaximumOrderQuantityForTargetValueResult(0, $"The price of the {security.Symbol.Value} security is zero because it does not have any market data yet. When the security price is set this security will be ready for trading.");
+                return context.Error(
+                    $"The price of the {security.Symbol.Value} security is zero because it does not have any market data yet. " +
+                    $"When the security price is set this security will be ready for trading."
+                );
             }
 
             // calculate the total cash available
@@ -234,7 +252,9 @@ namespace QuantConnect.Securities
             var currency = direction == OrderDirection.Buy ? security.QuoteCurrency.Symbol : baseCurrency.BaseCurrencySymbol;
             if (cashRemaining <= 0)
             {
-                return new GetMaximumOrderQuantityForTargetValueResult(0, $"The portfolio does not hold any {currency} for the order.");
+                return context.Error(
+                    $"The portfolio does not hold any {currency} for the order."
+                );
             }
 
             // continue iterating while we do not have enough cash for the order
@@ -248,7 +268,9 @@ namespace QuantConnect.Securities
             orderQuantity -= orderQuantity % security.SymbolProperties.LotSize;
             if (orderQuantity == 0)
             {
-                return new GetMaximumOrderQuantityForTargetValueResult(0, $"The order quantity is less than the lot size of {security.SymbolProperties.LotSize} and has been rounded to zero.", false);
+                return context.Zero(
+                    $"The order quantity is less than the lot size of {security.SymbolProperties.LotSize} and has been rounded to zero."
+                );
             }
 
             // Just in case...
@@ -273,27 +295,34 @@ namespace QuantConnect.Securities
                 orderQuantity -= orderQuantity % security.SymbolProperties.LotSize;
                 if (orderQuantity <= 0)
                 {
-                    return new GetMaximumOrderQuantityForTargetValueResult(0, $"The order quantity is less than the lot size of {security.SymbolProperties.LotSize} and has been rounded to zero." +
-                                                                              $"Target order value {targetOrderValue}. Order fees {orderFees}. Order quantity {orderQuantity}.");
+                    return context.Error(
+                        $"The order quantity is less than the lot size of {security.SymbolProperties.LotSize} and has been rounded to zero." +
+                        $"Target order value {targetOrderValue}. Order fees {orderFees}. Order quantity {orderQuantity}."
+                    );
                 }
 
                 if (lastOrderQuantity == orderQuantity)
                 {
-                    throw new Exception($"GetMaximumOrderQuantityForTargetValue failed to converge to target order value {targetOrderValue}. " +
-                                        $"Current order value is {currentOrderValue}. Order quantity {orderQuantity}. Lot size is " +
-                                        $"{security.SymbolProperties.LotSize}. Order fees {orderFees}. Security symbol {security.Symbol}");
+                    throw new Exception(
+                        $"GetMaximumOrderQuantityForTargetValue failed to converge to target order value {targetOrderValue}. " +
+                        $"Current order value is {currentOrderValue}. Order quantity {orderQuantity}. Lot size is " +
+                        $"{security.SymbolProperties.LotSize}. Order fees {orderFees}. Security symbol {security.Symbol}"
+                    );
                 }
+
                 lastOrderQuantity = orderQuantity;
 
                 // generate the order
                 var order = new MarketOrder(security.Symbol, orderQuantity, DateTime.UtcNow);
                 orderValue = orderQuantity * unitPrice;
                 orderFees = security.FeeModel.GetOrderFee(security, order);
+
                 currentOrderValue = orderValue + orderFees;
             } while (currentOrderValue > targetOrderValue);
 
             // add directionality back in
-            return new GetMaximumOrderQuantityForTargetValueResult((direction == OrderDirection.Sell ? -1 : 1) * orderQuantity);
+            orderQuantity = (direction == OrderDirection.Sell ? -1 : 1) * orderQuantity;
+            return context.Result(orderQuantity);
         }
 
         /// <summary>

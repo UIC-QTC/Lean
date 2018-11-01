@@ -75,5 +75,24 @@ namespace QuantConnect.Securities
             var context = new SufficientBuyingPowerForOrderContext(portfolio, security, order);
             return model.HasSufficientBuyingPowerForOrder(context);
         }
+
+        /// <summary>
+        /// Get the maximum market order quantity to obtain a position with a given value in account currency.
+        /// Will not take into account buying power.
+        /// </summary>
+        /// <param name="model">The <see cref="IBuyingPowerModel"/></param>
+        /// <param name="portfolio">The algorithm's portfolio</param>
+        /// <param name="security">The security to be traded</param>
+        /// <param name="target">Target percentage holdings</param>
+        public static GetMaximumOrderQuantityForTargetValueResult GetMaximumOrderQuantityForTargetValue(
+            this IBuyingPowerModel model,
+            SecurityPortfolioManager portfolio,
+            Security security,
+            decimal target
+            )
+        {
+            var context = new MaximumOrderQuantityForTargetValueContext(portfolio, security, target);
+            return model.GetMaximumOrderQuantityForTargetValue(context);
+        }
     }
 }
