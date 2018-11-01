@@ -13,34 +13,22 @@
  * limitations under the License.
 */
 
-using System;
-
 namespace QuantConnect.Orders.Fees
 {
     /// <summary>
-    /// Provides an order fee model that always returns the same order fee.
+    /// Provides a base class for all <see cref="IFeeModel"/>
     /// </summary>
-    public class ConstantFeeModel : FeeModel
+    public class FeeModel : IFeeModel
     {
-        private readonly decimal _fee;
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="ConstantFeeModel"/> class with the specified <paramref name="fee"/>
+        /// Gets the order fee associated with the specified order. This returns the cost
+        /// of the transaction in the account currency
         /// </summary>
-        /// <param name="fee">The constant order fee used by the model</param>
-        public ConstantFeeModel(decimal fee)
-        {
-            _fee = Math.Abs(fee);
-        }
-
-        /// <summary>
-        /// Returns the constant fee for the model
-        /// </summary>
-        /// <param name="context">A context object containing the security and order</param>
+        /// <param name="context"></param>
         /// <returns>The cost of the order in units of the account currency</returns>
-        public override OrderFee GetOrderFee(OrderFeeContext context)
+        public virtual OrderFee GetOrderFee(OrderFeeContext context)
         {
-            return context.ResultInAccountCurrency(_fee);
+            return context.Zero();
         }
     }
 }

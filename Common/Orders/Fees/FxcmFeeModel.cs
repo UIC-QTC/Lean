@@ -21,7 +21,7 @@ namespace QuantConnect.Orders.Fees
     /// <summary>
     /// Provides an implementation of <see cref="IFeeModel"/> that models FXCM order fees
     /// </summary>
-    public class FxcmFeeModel : IFeeModel
+    public class FxcmFeeModel : FeeModel
     {
         private readonly HashSet<Symbol> _groupCommissionSchedule1 = new HashSet<Symbol>
         {
@@ -39,7 +39,7 @@ namespace QuantConnect.Orders.Fees
         /// </summary>
         /// <param name="context">A context object containing the security and order</param>
         /// <returns>The cost of the order in units of the account currency</returns>
-        public OrderFee GetOrderFee(OrderFeeContext context)
+        public override OrderFee GetOrderFee(OrderFeeContext context)
         {
             // From http://www.fxcm.com/forex/forex-pricing/ (on Oct 6th, 2015)
             // Forex: $0.04 per side per 1k lot for EURUSD, GBPUSD, USDJPY, USDCHF, AUDUSD, EURJPY, GBPJPY

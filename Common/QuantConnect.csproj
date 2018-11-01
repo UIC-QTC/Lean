@@ -194,6 +194,7 @@
     <Compile Include="Orders\Fees\FeeModelExtensions.cs" />
     <Compile Include="Orders\Fees\OrderFee.cs" />
     <Compile Include="Orders\Fees\OrderFeeContext.cs" />
+    <Compile Include="Orders\Fees\FeeModel.cs" />
     <Compile Include="Interfaces\ISubscriptionDataConfigService.cs" />
     <Compile Include="Interfaces\ITimeKeeper.cs" />
     <Compile Include="IsolatorLimitResult.cs" />

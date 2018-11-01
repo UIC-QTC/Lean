@@ -18,7 +18,7 @@ namespace QuantConnect.Orders.Fees
     /// <summary>
     /// Provides an implementation of <see cref="IFeeModel"/> that models Bitfinex order fees
     /// </summary>
-    public class BitfinexFeeModel : IFeeModel
+    public class BitfinexFeeModel : FeeModel
     {
         /// <summary>
         /// Tier 1 maker fees
@@ -39,7 +39,7 @@ namespace QuantConnect.Orders.Fees
         /// </summary>
         /// <param name="context">A context object containing the security and order</param>
         /// <returns>The cost of the order in units of the account currency</returns>
-        public OrderFee GetOrderFee(OrderFeeContext context)
+        public override OrderFee GetOrderFee(OrderFeeContext context)
         {
             var security = context.Security;
             var order = context.Order;

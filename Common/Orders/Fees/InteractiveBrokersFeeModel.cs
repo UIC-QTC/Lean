@@ -21,7 +21,7 @@ namespace QuantConnect.Orders.Fees
     /// <summary>
     /// Provides the default implementation of <see cref="IFeeModel"/>
     /// </summary>
-    public class InteractiveBrokersFeeModel : IFeeModel
+    public class InteractiveBrokersFeeModel : FeeModel
     {
         private readonly decimal _forexCommissionRate;
         private readonly decimal _forexMinimumOrderFee;
@@ -46,7 +46,7 @@ namespace QuantConnect.Orders.Fees
         /// </summary>
         /// <param name="context">A context object containing the security and order</param>
         /// <returns>The cost of the order in units of the account currency</returns>
-        public OrderFee GetOrderFee(OrderFeeContext context)
+        public override OrderFee GetOrderFee(OrderFeeContext context)
         {
             var security = context.Security;
             var order = context.Order;

@@ -18,7 +18,7 @@ namespace QuantConnect.Orders.Fees
     /// <summary>
     /// Provides an implementation of <see cref="IFeeModel"/> that models GDAX order fees
     /// </summary>
-    public class GDAXFeeModel : IFeeModel
+    public class GDAXFeeModel : FeeModel
     {
         /// <summary>
         /// Tier 1 taker fees
@@ -31,7 +31,7 @@ namespace QuantConnect.Orders.Fees
         /// </summary>
         /// <param name="context">A context object containing the security and order</param>
         /// <returns>The cost of the order in units of the account currency</returns>
-        public OrderFee GetOrderFee(OrderFeeContext context)
+        public override OrderFee GetOrderFee(OrderFeeContext context)
         {
             var security = context.Security;
             var order = context.Order;

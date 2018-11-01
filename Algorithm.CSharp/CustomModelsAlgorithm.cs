@@ -114,7 +114,7 @@ namespace QuantConnect.Algorithm.CSharp
             }
         }
 
-        public class CustomFeeModel : IFeeModel
+        public class CustomFeeModel : FeeModel
         {
             private readonly QCAlgorithm _algorithm;
 
@@ -123,7 +123,7 @@ namespace QuantConnect.Algorithm.CSharp
                 _algorithm = algorithm;
             }
 
-            public OrderFee GetOrderFee(OrderFeeContext context)
+            public override OrderFee GetOrderFee(OrderFeeContext context)
             {
                 var security = context.Security;
                 var order = context.Order;
