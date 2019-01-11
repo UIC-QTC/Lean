@@ -45,6 +45,9 @@
     <Reference Include="DynamicInterop, Version=0.7.4.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\DynamicInterop.0.7.4\lib\net40\DynamicInterop.dll</HintPath>
     </Reference>
+    <Reference Include="Python.Runtime, Version=1.0.5.12, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\QuantConnect.pythonnet.1.0.5.12\lib\Python.Runtime.dll</HintPath>
+    </Reference>
     <Reference Include="RDotNet, Version=1.6.5.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\R.NET.Community.1.6.5\lib\net40\RDotNet.dll</HintPath>
     </Reference>
@@ -149,7 +152,9 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Baseclass.Contrib.Nuget.Output.2.2.0-xbuild02\build\net40\Baseclass.Contrib.Nuget.Output.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Baseclass.Contrib.Nuget.Output.2.2.0-xbuild02\build\net40\Baseclass.Contrib.Nuget.Output.targets'))" />
+    <Error Condition="!Exists('..\packages\QuantConnect.pythonnet.1.0.5.12\build\QuantConnect.pythonnet.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\QuantConnect.pythonnet.1.0.5.12\build\QuantConnect.pythonnet.targets'))" />
   </Target>
+  <Import Project="..\packages\QuantConnect.pythonnet.1.0.5.12\build\QuantConnect.pythonnet.targets" Condition="Exists('..\packages\QuantConnect.pythonnet.1.0.5.12\build\QuantConnect.pythonnet.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

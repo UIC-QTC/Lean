@@ -1,11 +1,11 @@
 ﻿/*
  * QUANTCONNECT.COM - Democratizing Finance, Empowering Individuals.
  * Lean Algorithmic Trading Engine v2.0. Copyright 2014 QuantConnect Corporation.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); 
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,11 +17,9 @@
 using System;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
-using System.IO;
 using System.Threading;
-using System.Windows.Forms;
+using Python.Runtime;
 using QuantConnect.Configuration;
-using QuantConnect.Interfaces;
 using QuantConnect.Lean.Engine;
 using QuantConnect.Logging;
 using QuantConnect.Packets;
@@ -53,7 +51,7 @@ namespace QuantConnect.Lean.Launcher
             #endif
 
             if (OS.IsWindows)
-            { 
+            {
                 Console.OutputEncoding = System.Text.Encoding.Unicode;
             }
 
@@ -67,7 +65,7 @@ namespace QuantConnect.Lean.Launcher
             var liveMode = Config.GetBool("live-mode");
             Log.DebuggingEnabled = Config.GetBool("debug-mode");
             Log.LogHandler = Composer.Instance.GetExportedValueByTypeName<ILogHandler>(Config.Get("log-handler", "CompositeLogHandler"));
-   
+
             //Name thread for the profiler:
             Thread.CurrentThread.Name = "Algorithm Analysis Thread";
             Log.Trace("Engine.Main(): LEAN ALGORITHMIC TRADING ENGINE v" + Globals.Version + " Mode: " + mode + " (" + (Environment.Is64BitProcess ? "64" : "32") + "bit)");
@@ -97,7 +95,7 @@ namespace QuantConnect.Lean.Launcher
             {
                 throw new Exception("Engine.Main(): Job was null.");
             }
-            
+
             LeanEngineAlgorithmHandlers leanEngineAlgorithmHandlers;
             try
             {
@@ -152,10 +150,33 @@ namespace QuantConnect.Lean.Launcher
                 // clean up resources
                 leanEngineSystemHandlers.Dispose();
                 leanEngineAlgorithmHandlers.Dispose();
+
+                if (job.Language == Language.Python)
+                {
+                    Log.Trace("Engine.Main(): Python engine shutdown starting.");
+
+                    PythonEngine.AcquireLock();
+                    PythonEngine.Shutdown();
+
+                    Log.Trace("Engine.Main(): Python engine shutdown completed.");
+                }
+
                 Log.LogHandler.Dispose();
 
                 Log.Trace("Program.Main(): Exiting Lean...");
 
+                Terminate();
+            }
+        }
+
+        private static void Terminate()
+        {
+            if (OS.IsLinux)
+            {
+                Process.GetCurrentProcess().Kill();
+            }
+            else
+            {
                 Environment.Exit(0);
             }
         }
