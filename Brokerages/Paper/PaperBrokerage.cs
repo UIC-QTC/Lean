@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using QuantConnect.Brokerages.Backtesting;
 using QuantConnect.Interfaces;
+using QuantConnect.Logging;
 using QuantConnect.Packets;
 using QuantConnect.Securities;
 
@@ -54,6 +55,7 @@ namespace QuantConnect.Brokerages.Paper
             {
                 // remove the key, we really only want to return the cached value on the first request
                 _job.BrokerageData.Remove("project-paper-equity");
+                Log.Trace($"PaperBrokerage.GetCashBalance(): setting Cash to {value} {Algorithm.AccountCurrency} from 'project-paper-equity'");
                 return new List<CashAmount> {new CashAmount(decimal.Parse(value), Algorithm.AccountCurrency)};
             }
 
