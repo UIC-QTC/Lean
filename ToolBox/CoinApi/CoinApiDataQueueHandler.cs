@@ -16,10 +16,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using CoinAPI.WebSocket.V1;
+using CoinAPI.WebSocket.V1.DataModels;
 using QuantConnect.Brokerages;
 using QuantConnect.Configuration;
 using QuantConnect.Data;
@@ -27,7 +26,6 @@ using QuantConnect.Data.Market;
 using QuantConnect.Interfaces;
 using QuantConnect.Logging;
 using QuantConnect.Packets;
-using QuantConnect.ToolBox.CoinApi.Messages;
 using QuantConnect.Util;
 
 namespace QuantConnect.ToolBox.CoinApi
@@ -37,10 +35,8 @@ namespace QuantConnect.ToolBox.CoinApi
     /// </summary>
     public class CoinApiDataQueueHandler : IDataQueueHandler, IDisposable
     {
-        private const string WebSocketUrl = "wss://ws.coinapi.io/v1/";
-
         private readonly string _apiKey = Config.Get("coinapi-api-key");
-        private readonly WebSocketWrapper _webSocket = new WebSocketWrapper();
+        private readonly CoinApiWsClient _client;
         private readonly object _locker = new object();
         private readonly List<Tick> _ticks = new List<Tick>();
         private readonly DefaultConnectionHandler _connectionHandler = new DefaultConnectionHandler();
@@ -58,9 +54,6 @@ namespace QuantConnect.ToolBox.CoinApi
         private List<string> _subscribedExchanges = new List<string>();
 
         private readonly Dictionary<Symbol, Tick> _previousQuotes = new Dictionary<Symbol, Tick>();
-        private readonly Queue<WebSocketMessage> _processingQueue = new Queue<WebSocketMessage>();
-        private readonly AutoResetEvent _processingEvent = new AutoResetEvent(false);
-        private readonly CancellationTokenSource _cts = new CancellationTokenSource();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CoinApiDataQueueHandler"/> class
@@ -73,61 +66,9 @@ namespace QuantConnect.ToolBox.CoinApi
 
             _connectionHandler.Initialize(string.Empty);
 
-            _webSocket.Initialize(WebSocketUrl);
-
-            _webSocket.Message += (s, m) => EnqueueMessage(m);
-
-            _webSocket.Connect();
-
-            new Thread(new ThreadStart(MessagesProcessorThread)).Start();
-        }
-
-        private void MessagesProcessorThread()
-        {
-            while (!_cts.IsCancellationRequested)
-            {
-                // wait for the messages
-                _processingEvent.WaitOne();
-
-                // process messages until there is at least one on the Q
-                while (!_cts.IsCancellationRequested)
-                {
-                    // get the message if possible
-                    WebSocketMessage msg = null;
-                    lock (_processingQueue)
-                    {
-                        if (_processingQueue.Count > 0)
-                        {
-                            msg = _processingQueue.Dequeue();
-                        }
-                    }
-
-                    if (msg == null)
-                    {
-                        // no more messages
-                        break;
-                    }
-
-                    // process message
-                    try
-                    {
-                        OnMessage(this, msg);
-                    }
-                    catch (Exception exception)
-                    {
-                        Log.Error($"Error processing message: {msg.Message} - Error: {exception}");
-                    }
-                }
-            }
-        }
-
-        private void EnqueueMessage(WebSocketMessage msg)
-        {
-            lock (_processingQueue)
-            {
-                _processingQueue.Enqueue(msg);
-            }
-            _processingEvent.Set();
+            _client = new CoinApiWsClient();
+            _client.TradeEvent += OnTrade;
+            _client.QuoteEvent += OnQuote;
         }
 
         /// <summary>
@@ -197,15 +138,11 @@ namespace QuantConnect.ToolBox.CoinApi
         /// </summary>
         public void Dispose()
         {
-            _cts.Cancel();
-            _cts.Dispose();
+            _client.TradeEvent -= OnTrade;
+            _client.QuoteEvent -= OnQuote;
+            _client.Dispose();
 
             _connectionHandler.DisposeSafely();
-
-            if (_webSocket.IsOpen)
-            {
-                _webSocket.Close();
-            }
         }
 
         /// <summary>
@@ -317,97 +254,63 @@ namespace QuantConnect.ToolBox.CoinApi
                 list.Add("$no_symbol_requested$");
             }
 
-            var message = JsonConvert.SerializeObject(new HelloMessage
+            _client.SendHelloMessage(new Hello
             {
-                ApiKey = _apiKey,
-                Heartbeat = true,
-                SubscribeDataType = new[] { "trade", "quote" },
-                SubscribeFilterSymbolId = list.ToArray()
+                apikey = Guid.Parse(_apiKey),
+                heartbeat = true,
+                subscribe_data_type = new[] { "trade", "quote" },
+                subscribe_filter_symbol_id = list.ToArray()
             });
-
-            _webSocket.Send(message);
 
             _nextHelloMessageUtcTime = DateTime.UtcNow.Add(_minimumTimeBetweenHelloMessages);
         }
 
-        private void OnMessage(object sender, WebSocketMessage e)
+        private void OnTrade(object sender, Trade trade)
         {
-            var jObject = JObject.Parse(e.Message);
-
-            var type = jObject["type"].ToString();
-            switch (type)
+            var item = new Tick
             {
-                case "trade":
-                    {
-                        var trade = jObject.ToObject<TradeMessage>();
+                Symbol = _symbolMapper.GetLeanSymbol(trade.symbol_id, SecurityType.Crypto, string.Empty),
+                Time = trade.time_exchange,
+                Value = trade.price,
+                Quantity = trade.size,
+                TickType = TickType.Trade
+            };
 
-                        var item = new Tick
-                        {
-                            Symbol = _symbolMapper.GetLeanSymbol(trade.SymbolId, SecurityType.Crypto, string.Empty),
-                            Time = trade.TimeExchange,
-                            Value = trade.Price,
-                            Quantity = trade.Size,
-                            TickType = TickType.Trade
-                        };
-
-                        lock (_locker)
-                        {
-                            _ticks.Add(item);
-                        }
-
-                        _connectionHandler.KeepAlive(DateTime.UtcNow);
-                        break;
-                    }
-
-                case "quote":
-                    {
-                        var quote = jObject.ToObject<QuoteMessage>();
-                        var tick = new Tick
-                        {
-                            Symbol = _symbolMapper.GetLeanSymbol(quote.SymbolId, SecurityType.Crypto, string.Empty),
-                            Time = quote.TimeExchange,
-                            AskPrice = quote.AskPrice,
-                            AskSize = quote.AskSize,
-                            BidPrice = quote.BidPrice,
-                            BidSize = quote.BidSize,
-                            TickType = TickType.Quote
-                        };
-
-                        lock (_locker)
-                        {
-                            // only emit quote ticks if bid price or ask price changed
-                            Tick previousQuote;
-                            if (!_previousQuotes.TryGetValue(tick.Symbol, out previousQuote) ||
-                                tick.AskPrice != previousQuote.AskPrice ||
-                                tick.BidPrice != previousQuote.BidPrice)
-                            {
-                                _previousQuotes[tick.Symbol] = tick;
-                                _ticks.Add(tick);
-                            }
-                        }
-
-                        _connectionHandler.KeepAlive(DateTime.UtcNow);
-                        break;
-                    }
-
-                // not a typo :)
-                case "hearbeat":
-                // just in case the typo will be fixed in the future
-                case "heartbeat":
-                    _connectionHandler.KeepAlive(DateTime.UtcNow);
-                    break;
-
-                case "error":
-                    {
-                        var error = jObject.ToObject<ErrorMessage>();
-                        Log.Error(error.Message);
-                        break;
-                    }
-
-                default:
-                    Log.Trace(e.Message);
-                    break;
+            lock (_locker)
+            {
+                _ticks.Add(item);
             }
+
+            _connectionHandler.KeepAlive(DateTime.UtcNow);
+        }
+
+        private void OnQuote(object sender, Quote quote)
+        {
+            var tick = new Tick
+            {
+                Symbol = _symbolMapper.GetLeanSymbol(quote.symbol_id, SecurityType.Crypto, string.Empty),
+                Time = quote.time_exchange,
+                AskPrice = quote.ask_price,
+                AskSize = quote.ask_size,
+                BidPrice = quote.bid_price,
+                BidSize = quote.bid_size,
+                TickType = TickType.Quote
+            };
+
+            lock (_locker)
+            {
+                // only emit quote ticks if bid price or ask price changed
+                Tick previousQuote;
+                if (!_previousQuotes.TryGetValue(tick.Symbol, out previousQuote) ||
+                    tick.AskPrice != previousQuote.AskPrice ||
+                    tick.BidPrice != previousQuote.BidPrice)
+                {
+                    _previousQuotes[tick.Symbol] = tick;
+                    _ticks.Add(tick);
+                }
+            }
+
+            _connectionHandler.KeepAlive(DateTime.UtcNow);
         }
 
         private void OnConnectionLost(object sender, EventArgs e)
@@ -422,21 +325,7 @@ namespace QuantConnect.ToolBox.CoinApi
 
         private void OnReconnectRequested(object sender, EventArgs e)
         {
-            Log.Trace($"CoinApiDataQueueHandler.OnReconnectRequested(): CoinAPI reconnection requested: IsOpen:{_webSocket.IsOpen} ReadyState:{_webSocket.ReadyState}");
-
-            if (!_webSocket.IsOpen)
-            {
-                Log.Trace("CoinApiDataQueueHandler.OnReconnectRequested(): Websocket connecting.");
-                _webSocket.Connect();
-            }
-
-            if (!_webSocket.IsOpen)
-            {
-                Log.Trace($"CoinApiDataQueueHandler.OnReconnectRequested(): Websocket not open: IsOpen:{_webSocket.IsOpen} ReadyState:{_webSocket.ReadyState}");
-                return;
-            }
-
-            Log.Trace($"CoinApiDataQueueHandler.OnReconnectRequested(): Reconnected: IsOpen:{_webSocket.IsOpen} ReadyState:{_webSocket.ReadyState}");
+            Log.Trace($"CoinApiDataQueueHandler.OnReconnectRequested(): CoinAPI reconnection requested: UnprocessedMessagesQueueSize:{_client.UnprocessedMessagesQueueSize}");
 
             if (_subscribedExchanges.Count > 0)
             {
