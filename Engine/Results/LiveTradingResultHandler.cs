@@ -241,7 +241,7 @@ namespace QuantConnect.Lean.Engine.Results
 
                         if (!security.IsInternalFeed() && !security.Symbol.IsCanonical())
                         {
-                            DictionarySafeAdd(holdings, security.Symbol.Value, new Holding(security), "holdings");
+                            DictionarySafeAdd(holdings, security.Symbol.ID.ToString(), new Holding(security), "holdings");
                         }
                     }
 
