@@ -23,6 +23,7 @@ using QuantConnect.Securities;
 using QuantConnect.Statistics;
 using QuantConnect.Tests.Engine.DataFeeds;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Moq;
 using QuantConnect.Brokerages.Backtesting;
@@ -53,8 +54,8 @@ namespace QuantConnect.Tests.Common.Statistics
                 orderEventProvider
             );
 
-            // 50% of SPY. Volume of 50mi.
-            var orderEvent = CreateOrderEvent(algorithm, Symbols.SPY, .5m, 50);
+            // 50% of SPY. Volume of 50mi in 5 minutes.
+            var orderEvent = CreateOrderEvent(algorithm, Symbols.SPY, .5m, 10m / 60);
             orderEventProvider.OnNewOrderEvent(orderEvent);
 
             var config = subscriptionDataConfigProvider.GetSubscriptionDataConfigs(orderEvent.Symbol).First();
@@ -62,8 +63,12 @@ namespace QuantConnect.Tests.Common.Statistics
 
             // Push data to the consolidator
             var data = security.GetLastData();
-            data.Time = data.Time.AddMinutes(5);
-            config.Consolidators.First().Update(data);
+            var consolidator = config.Consolidators.First();
+            for (var i = 0; i < 300; i++)
+            {
+                data.Time = data.Time.AddSeconds(1);
+                consolidator.Update(data);
+            }
 
             var expected = 50000000 * GetFactor(resolution) / .5;
             Assert.AreEqual(expected, manager.AumCapacity);
@@ -173,6 +178,60 @@ namespace QuantConnect.Tests.Common.Statistics
             Assert.AreEqual(expected, manager.AumCapacity);
         }
 
+        [TestCase(Resolution.Second)]
+        [TestCase(Resolution.Minute)]
+        public void EmitsOrdersEveryTwoMinutes(Resolution resolution)
+        {
+            var algorithm = GetAlgorithm(resolution);
+            var portfolio = algorithm.Portfolio;
+            var subscriptionDataConfigProvider = algorithm.SubscriptionManager.SubscriptionDataConfigService;
+            var orderEventProvider = new MockOrderEventProvider();
+
+            var security = portfolio.Securities[Symbols.SPY];
+
+            var manager = new AssetsUnderManagementCapacityManager(
+                portfolio,
+                subscriptionDataConfigProvider,
+                orderEventProvider
+            );
+
+            var dataList = new List<BaseData>();
+            var time = algorithm.Time;
+            for (var i = 1; i < 1200; i++)
+            {
+                var orderEvent = CreateOrderEvent(algorithm, Symbols.SPY, 1m / 10, .5m);
+                if (i % 120 == 0)
+                {
+                    orderEventProvider.OnNewOrderEvent(orderEvent);
+                }
+                dataList.Add(security.GetLastData());
+                algorithm.SetDateTime(time.AddSeconds(i));
+            }
+
+            var config = subscriptionDataConfigProvider.GetSubscriptionDataConfigs(Symbols.SPY).First();
+            Assert.AreEqual(9, config.Consolidators.Count);
+
+            var timeList = new List<DateTime>();
+            foreach (var consolidator in config.Consolidators)
+            {
+                consolidator.DataConsolidated += (s, e) => timeList.Add(e.EndTime);
+            }
+
+            foreach (var data in dataList)
+            {
+                foreach (var consolidator in config.Consolidators.ToList())
+                {
+                    if (data.EndTime > consolidator.WorkingData.EndTime)
+                    {
+                        consolidator.Update(data);
+                    }
+                }
+            }
+
+            Assert.AreEqual(250000, Math.Round(manager.AumCapacity));
+            Assert.AreEqual(9, timeList.Distinct().Count());
+        }
+
         [Test]
         public void ComputeCapacityForComplexCase()
         {
@@ -246,7 +305,7 @@ namespace QuantConnect.Tests.Common.Statistics
         {
             var algorithm = new QCAlgorithm();
             algorithm.SubscriptionManager.SetDataManager(new DataManagerStub(algorithm));
-            algorithm.SetDateTime(DateTime.UtcNow);
+            algorithm.SetDateTime(DateTime.Today.AddHours(9.5));
             algorithm.AddEquity("SPY", resolution);
             algorithm.AddEquity("AAPL", resolution);
             algorithm.SetFinishedWarmingUp();

@@ -19,7 +19,6 @@ using QuantConnect.Interfaces;
 using QuantConnect.Securities;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using QuantConnect.Data.Consolidators;
 using QuantConnect.Data.Market;
@@ -44,6 +43,7 @@ namespace QuantConnect.Statistics
 
         private readonly Dictionary<Symbol, decimal> _maximumSymbolCapacity;
         private readonly RollingWindow<decimal> _historicalPortfolioCapacity;
+        private readonly Func<DateTime, CalendarInfo> _periodFunc;
         private DateTime _previousInputTime;
 
         /// <summary>
@@ -68,6 +68,7 @@ namespace QuantConnect.Statistics
 
             _maximumSymbolCapacity = new Dictionary<Symbol, decimal>();
             _historicalPortfolioCapacity = new RollingWindow<decimal>(30);
+            _periodFunc = dt => new CalendarInfo(dt, TimeSpan.FromMinutes(5));
             _previousInputTime = DateTime.MinValue;
 
             orderEventProvider.NewOrderEvent += HandleNewOrderEvent;
@@ -85,13 +86,28 @@ namespace QuantConnect.Statistics
             var configs = _subscriptionDataConfigProvider.GetSubscriptionDataConfigs(symbol);
             if (configs.IsNullOrEmpty())
             {
-                Log.Error($"AssetsUnderManagementCapacityManager: Could not find any SubscriptionDataConfig for {symbol}.");
+                Log.Error(
+                    $"AssetsUnderManagementCapacityManager: Could not find any SubscriptionDataConfig for {symbol}."
+                );
                 return;
+            }
+
+            var security = _portfolio.Securities[symbol];
+
+            var holdingsTurnover = 1m;
+            var holdingsValue = security.Holdings.AbsoluteHoldingsValue;
+
+            if (holdingsValue != 0)
+            {
+                // Compute the holdings turnover which is the ratio between the order value and the holdings value.
+                // The holdings turnover is 1 when a new position is opened and decreases as new orders change the holdings 
+                var order = _portfolio.Transactions.GetOrderById(orderEvent.OrderId);
+                var orderValue = Math.Abs(order.GetValue(security));
+                holdingsTurnover = orderValue / holdingsValue;
             }
 
             var consolidator = default(IDataConsolidator);
             var hasHighResolution = false;
-            var security = _portfolio.Securities[symbol];
             BaseData lastData = security.Cache.GetData<TradeBar>();
 
             // For high resolution data, create a consolidator that will compute
@@ -102,14 +118,14 @@ namespace QuantConnect.Statistics
 
                 if (config.Type.IsAssignableFrom(typeof(TradeBar)))
                 {
-                    consolidator = new TradeBarConsolidator(TimeSpan.FromMinutes(5));
+                    consolidator = new TradeBarConsolidator(_periodFunc);
                 }
 
                 if (config.Type.IsAssignableFrom(typeof(Tick)) &&
                     config.TickType == TickType.Trade)
                 {
-                    consolidator = new TickConsolidator(TimeSpan.FromMinutes(5));
                     lastData = security.Cache.GetData<Tick>();
+                    consolidator = new TickConsolidator(_periodFunc);
                 }
 
                 if (consolidator == null)
@@ -124,7 +140,7 @@ namespace QuantConnect.Statistics
                 }
 
                 config.Consolidators.Add(consolidator);
-                consolidator.DataConsolidated += (s, data) => Update(consolidator, data, orderEvent.OrderId, security);
+                consolidator.DataConsolidated += (s, data) => Update(consolidator, data, security, holdingsTurnover);
                 return;
             }
 
@@ -140,7 +156,7 @@ namespace QuantConnect.Statistics
             // For low resolution, use the last data available
             if (lastData != null)
             {
-                Update(null, lastData, orderEvent.OrderId, security);
+                Update(null, lastData, security, holdingsTurnover);
             }
         }
 
@@ -149,40 +165,21 @@ namespace QuantConnect.Statistics
         /// </summary>
         /// <param name="consolidator">Consolidator (if using high resolution data) to be removed after the update</param>
         /// <param name="data">Last price trade bar available or consolidated</param>
-        /// <param name="orderId">Order fill ID</param>
         /// <param name="security">The security of the data</param>
+        /// <param name="holdingsTurnover">Holdings turnover: the ratio between the order value and the security holdings value</param>
         /// <remarks>
         /// The whole method body is locked, since order events can be triggered at any time in live mode
         /// </remarks>
-        private void Update(IDataConsolidator consolidator, IBaseData data, int orderId, Security security)
+        private void Update(IDataConsolidator consolidator, IBaseData data, Security security, decimal holdingsTurnover)
         {
             lock (_lock)
             {
-                var symbol = data.Symbol;
-
-                var holdingsTurnover = 1m;
-                var holdingsValue = security.Holdings.AbsoluteHoldingsValue;
-
-                if (holdingsValue != 0)
-                {
-                    // Gets the order of the event to get its value in account currency
-                    var order = _portfolio.Transactions.GetOrderById(orderId);
-                    var orderValue = Math.Abs(order.GetValue(security));
-                    holdingsTurnover = orderValue / holdingsValue;
-
-                    if (holdingsTurnover == 0)
-                    {
-                        RemoveConsolidator(consolidator, symbol);
-                        return;
-                    }
-                }
-
-                var totalMarketDollarVolume = GetTotalMarketDollarVolume(data) * security.SymbolProperties.ContractMultiplier;
+                var totalMarketDollarVolume = GetTotalMarketDollarVolume(data, security);
                 var totalTradeVolumeCapacity = totalMarketDollarVolume / holdingsTurnover;
 
                 // If it is a new day, we discard the previous day data
                 var utcDate = data.EndTime.ConvertToUtc(security.Exchange.TimeZone).Date;
-                if (_previousInputTime != utcDate)
+                if (utcDate > _previousInputTime)
                 {
                     _previousInputTime = utcDate;
                     _maximumSymbolCapacity.Clear();
@@ -190,12 +187,14 @@ namespace QuantConnect.Statistics
                 }
 
                 // Updates AUM Capacity if there is new information or lower total trade volume capacity for the security
+                var symbol = data.Symbol;
                 decimal capacity;
                 if (!_maximumSymbolCapacity.TryGetValue(symbol, out capacity) ||
-                    totalTradeVolumeCapacity < capacity)
+                    totalTradeVolumeCapacity < capacity && 0 < totalTradeVolumeCapacity)
                 {
                     _maximumSymbolCapacity[symbol] = totalTradeVolumeCapacity;
                     _historicalPortfolioCapacity[0] = _maximumSymbolCapacity.Sum(x => x.Value);
+                    Log.Trace($"AUM.Update -> {data.EndTime} :: {symbol} :: {((TradeBar) data).Volume}");
                 }
 
                 RemoveConsolidator(consolidator, symbol);
@@ -206,7 +205,8 @@ namespace QuantConnect.Statistics
         /// Gets the total market volume which is a fraction of the current trade bar volume
         /// </summary>
         /// <param name="data">Last price trade bar available or consolidated</param>
-        private static decimal GetTotalMarketDollarVolume(IBaseData data)
+        /// <param name="security">The security of the data</param>
+        private static decimal GetTotalMarketDollarVolume(IBaseData data, Security security)
         {
             var tradeBar = (TradeBar) data;
 
@@ -215,7 +215,9 @@ namespace QuantConnect.Statistics
                 ? .025m
                 : .050m;
 
-            return factor * tradeBar.Volume * tradeBar.Price;
+            return factor * tradeBar.Volume * tradeBar.Price * 
+                   security.SymbolProperties.ContractMultiplier *
+                   security.QuoteCurrency.ConversionRate;
         }
 
         /// <summary>
