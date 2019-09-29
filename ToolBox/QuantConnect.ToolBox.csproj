@@ -49,8 +49,8 @@
     <StartupObject>QuantConnect.ToolBox.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CoinAPI.WebSocket.V1, Version=1.5.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\CoinAPI.WebSocket.V1.1.5.2\lib\net45\CoinAPI.WebSocket.V1.dll</HintPath>
+    <Reference Include="CoinAPI.WebSocket.V1, Version=1.6.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\CoinAPI.WebSocket.V1.1.6.0\lib\net45\CoinAPI.WebSocket.V1.dll</HintPath>
     </Reference>
     <Reference Include="DotNetZip, Version=1.13.3.0, Culture=neutral, PublicKeyToken=6583c7c814667745, processorArchitecture=MSIL">
       <HintPath>..\packages\DotNetZip.1.13.3\lib\net40\DotNetZip.dll</HintPath>
