@@ -49,6 +49,9 @@
     <StartupObject>QuantConnect.ToolBox.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CoinAPI.WebSocket.V1, Version=1.5.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\CoinAPI.WebSocket.V1.1.5.2\lib\net45\CoinAPI.WebSocket.V1.dll</HintPath>
+    </Reference>
     <Reference Include="DotNetZip, Version=1.13.3.0, Culture=neutral, PublicKeyToken=6583c7c814667745, processorArchitecture=MSIL">
       <HintPath>..\packages\DotNetZip.1.13.3\lib\net40\DotNetZip.dll</HintPath>
     </Reference>
@@ -243,20 +246,6 @@
     <Compile Include="CoinApiDataConverter\CoinApiDataConverter.cs" />
     <Compile Include="CoinApiDataConverter\CoinApiDataReader.cs" />
     <Compile Include="CoinApiDataConverter\CoinApiEntryData.cs" />
-    <Compile Include="CoinApi\CoinAPI.WebSocket.V1\CoinApiWsClient.cs" />
-    <Compile Include="CoinApi\CoinAPI.WebSocket.V1\DataModels\ExchangeRate.cs" />
-    <Compile Include="CoinApi\CoinAPI.WebSocket.V1\DataModels\Hello.cs" />
-    <Compile Include="CoinApi\CoinAPI.WebSocket.V1\DataModels\MessageBase.cs" />
-    <Compile Include="CoinApi\CoinAPI.WebSocket.V1\DataModels\MessageType.cs" />
-    <Compile Include="CoinApi\CoinAPI.WebSocket.V1\DataModels\OHLCV.cs" />
-    <Compile Include="CoinApi\CoinAPI.WebSocket.V1\DataModels\OrderBook.cs" />
-    <Compile Include="CoinApi\CoinAPI.WebSocket.V1\DataModels\Quote.cs" />
-    <Compile Include="CoinApi\CoinAPI.WebSocket.V1\DataModels\Trade.cs" />
-    <Compile Include="CoinApi\CoinAPI.WebSocket.V1\DataModels\Volume.cs" />
-    <Compile Include="CoinApi\CoinAPI.WebSocket.V1\ICoinApiWsClient.cs" />
-    <Compile Include="CoinApi\CoinAPI.WebSocket.V1\MessageData.cs" />
-    <Compile Include="CoinApi\CoinAPI.WebSocket.V1\QueueThread.cs" />
-    <Compile Include="CoinApi\CoinAPI.WebSocket.V1\WSUtils.cs" />
     <Compile Include="CoinApi\CoinApiSymbol.cs" />
     <Compile Include="CoinApi\CoinApiSymbolMapper.cs" />
     <Compile Include="CoinApi\CoinApiDataQueueHandler.cs" />
