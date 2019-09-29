@@ -69,6 +69,7 @@ namespace QuantConnect.ToolBox.CoinApi
             _client = new CoinApiWsClient();
             _client.TradeEvent += OnTrade;
             _client.QuoteEvent += OnQuote;
+            _client.Error += OnError;
         }
 
         /// <summary>
@@ -140,6 +141,7 @@ namespace QuantConnect.ToolBox.CoinApi
         {
             _client.TradeEvent -= OnTrade;
             _client.QuoteEvent -= OnQuote;
+            _client.Error -= OnError;
             _client.Dispose();
 
             _connectionHandler.DisposeSafely();
@@ -311,6 +313,11 @@ namespace QuantConnect.ToolBox.CoinApi
             }
 
             _connectionHandler.KeepAlive(DateTime.UtcNow);
+        }
+
+        private void OnError(object sender, Exception e)
+        {
+            Log.Error(e, "CoinApi error: ");
         }
 
         private void OnConnectionLost(object sender, EventArgs e)
