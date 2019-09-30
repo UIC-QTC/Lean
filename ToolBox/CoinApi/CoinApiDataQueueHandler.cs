@@ -19,7 +19,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using CoinAPI.WebSocket.V1;
 using CoinAPI.WebSocket.V1.DataModels;
-using QuantConnect.Brokerages;
 using QuantConnect.Configuration;
 using QuantConnect.Data;
 using QuantConnect.Data.Market;
@@ -39,7 +38,6 @@ namespace QuantConnect.ToolBox.CoinApi
         private readonly CoinApiWsClient _client;
         private readonly object _locker = new object();
         private readonly List<Tick> _ticks = new List<Tick>();
-        private readonly DefaultConnectionHandler _connectionHandler = new DefaultConnectionHandler();
         private readonly CoinApiSymbolMapper _symbolMapper = new CoinApiSymbolMapper();
 
         private readonly TimeSpan _subscribeDelay = TimeSpan.FromMilliseconds(250);
@@ -51,8 +49,6 @@ namespace QuantConnect.ToolBox.CoinApi
         private readonly TimeSpan _minimumTimeBetweenHelloMessages = TimeSpan.FromSeconds(5);
         private DateTime _nextHelloMessageUtcTime = DateTime.MinValue;
 
-        private List<string> _subscribedExchanges = new List<string>();
-
         private readonly Dictionary<Symbol, Tick> _previousQuotes = new Dictionary<Symbol, Tick>();
 
         /// <summary>
@@ -60,12 +56,6 @@ namespace QuantConnect.ToolBox.CoinApi
         /// </summary>
         public CoinApiDataQueueHandler()
         {
-            _connectionHandler.ConnectionLost += OnConnectionLost;
-            _connectionHandler.ConnectionRestored += OnConnectionRestored;
-            _connectionHandler.ReconnectRequested += OnReconnectRequested;
-
-            _connectionHandler.Initialize(string.Empty);
-
             _client = new CoinApiWsClient();
             _client.TradeEvent += OnTrade;
             _client.QuoteEvent += OnQuote;
@@ -143,8 +133,6 @@ namespace QuantConnect.ToolBox.CoinApi
             _client.QuoteEvent -= OnQuote;
             _client.Error -= OnError;
             _client.Dispose();
-
-            _connectionHandler.DisposeSafely();
         }
 
         /// <summary>
@@ -155,11 +143,7 @@ namespace QuantConnect.ToolBox.CoinApi
         {
             Log.Trace($"CoinApiDataQueueHandler.SubscribeMarkets(): {string.Join(",", markets)}");
 
-            _subscribedExchanges = markets.ToList();
-
             SendHelloMessage(markets.Select(x => _symbolMapper.GetExchangeId(x)));
-
-            _connectionHandler.EnableMonitoring(true);
         }
 
         private void ProcessSubscriptionRequest()
@@ -241,8 +225,6 @@ namespace QuantConnect.ToolBox.CoinApi
             Log.Trace($"CoinApiDataQueueHandler.SubscribeSymbols(): {string.Join(",", symbolsToSubscribe)}");
 
             SendHelloMessage(_subscribedSymbols.Select(_symbolMapper.GetBrokerageSymbol));
-
-            _connectionHandler.EnableMonitoring(true);
         }
 
         private void SendHelloMessage(IEnumerable<string> subscribeFilter)
@@ -282,8 +264,6 @@ namespace QuantConnect.ToolBox.CoinApi
             {
                 _ticks.Add(item);
             }
-
-            _connectionHandler.KeepAlive(DateTime.UtcNow);
         }
 
         private void OnQuote(object sender, Quote quote)
@@ -311,39 +291,11 @@ namespace QuantConnect.ToolBox.CoinApi
                     _ticks.Add(tick);
                 }
             }
-
-            _connectionHandler.KeepAlive(DateTime.UtcNow);
         }
 
         private void OnError(object sender, Exception e)
         {
-            Log.Error(e, "CoinApi error: ");
-        }
-
-        private void OnConnectionLost(object sender, EventArgs e)
-        {
-            Log.Error("CoinApiDataQueueHandler.OnConnectionLost(): CoinAPI connection lost.");
-        }
-
-        private void OnConnectionRestored(object sender, EventArgs e)
-        {
-            Log.Trace("CoinApiDataQueueHandler.OnConnectionRestored(): CoinAPI connection restored.");
-        }
-
-        private void OnReconnectRequested(object sender, EventArgs e)
-        {
-            Log.Trace($"CoinApiDataQueueHandler.OnReconnectRequested(): CoinAPI reconnection requested: UnprocessedMessagesQueueSize:{_client.UnprocessedMessagesQueueSize}");
-
-            if (_subscribedExchanges.Count > 0)
-            {
-                Log.Trace("CoinApiDataQueueHandler.OnReconnectRequested(): Subscribe markets.");
-                SubscribeMarkets(_subscribedExchanges);
-            }
-            else if (_subscribedSymbols.Count > 0)
-            {
-                Log.Trace("CoinApiDataQueueHandler.OnReconnectRequested(): Subscribe symbols.");
-                SubscribeSymbols(_subscribedSymbols.ToList());
-            }
+            Log.Error(e);
         }
     }
 }
