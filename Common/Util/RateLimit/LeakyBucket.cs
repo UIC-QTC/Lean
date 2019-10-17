@@ -153,11 +153,13 @@ namespace QuantConnect.Util.RateLimit
                 if (tokens > _available)
                 {
                     // we don't have enough tokens yet
+                    Logging.Log.Trace($"LeakyBucket.TryConsume({tokens}): Failed to consumed tokens. Available: {_available}");
                     return false;
                 }
 
                 // subtract the number of tokens consumed
                 _available = _available - tokens;
+                Logging.Log.Trace($"LeakyBucket.TryConsume({tokens}): Successfully consumed tokens. Available: {_available}");
                 return true;
             }
         }
