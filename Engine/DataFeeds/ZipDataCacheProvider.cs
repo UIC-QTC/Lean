@@ -90,19 +90,35 @@ namespace QuantConnect.Lean.Engine.DataFeeds
                     {
                         try
                         {
-                            lock (existingEntry)
+                            if(Monitor.TryEnter(existingEntry, TimeSpan.FromMilliseconds(50)))
                             {
-                                if (existingEntry.Disposed)
+                                try
                                 {
-                                    // bad luck, thread race condition
-                                    // it was disposed and removed after we got it
-                                    // so lets create it again and add it
-                                    stream = CacheAndCreateStream(filename, entryName, utcNow);
+                                    if (existingEntry.Disposed)
+                                    {
+                                        // bad luck, thread race condition
+                                        // it was disposed and removed after we got it
+                                        // so lets create it again and add it
+                                        stream = CacheAndCreateStream(filename, entryName, utcNow);
+                                    }
+                                    else
+                                    {
+                                        stream = CreateStream(existingEntry, entryName, filename);
+                                    }
                                 }
-                                else
+                                finally
                                 {
-                                    stream = CreateStream(existingEntry, entryName, filename);
+                                    Monitor.Exit(existingEntry);
                                 }
+                            }
+                            else
+                            {
+                                // we cant wait for ever lets get our own stream
+
+                                var cacheZipFile = CreateCacheZipFile(filename, entryName, utcNow);
+                                stream = CreateStream(cacheZipFile, entryName, filename);
+                                // lets dispose ours
+                                cacheZipFile.Dispose();
                             }
                         }
                         catch (Exception exception)
@@ -203,25 +219,46 @@ namespace QuantConnect.Lean.Engine.DataFeeds
             }
         }
 
-        private Stream CacheAndCreateStream(string filename, string entryName, DateTime utcNow)
+        private CachedZipFile CreateCacheZipFile(string filename, string entryName, DateTime utcNow)
         {
-            Stream stream = null;
+            CachedZipFile cachedZipFile = null;
             var dataStream = _dataProvider.Fetch(filename);
 
             if (dataStream != null)
             {
                 try
                 {
-                    var newItem = new CachedZipFile(dataStream, filename, utcNow);
+                    cachedZipFile = new CachedZipFile(dataStream, filename, utcNow);
+                }
+                catch (Exception exception)
+                {
+                    if (exception is ZipException || exception is ZlibException)
+                    {
+                        Log.Error("ZipDataCacheProvider.Fetch(): Corrupt zip file/entry: " + filename + "#" + entryName + " Error: " + exception);
+                    }
+                    else throw;
+                }
+            }
+            return cachedZipFile;
+        }
 
+        private Stream CacheAndCreateStream(string filename, string entryName, DateTime utcNow)
+        {
+            Stream stream = null;
+            var cacheZipFile = CreateCacheZipFile(filename, entryName, utcNow);
+
+            if (cacheZipFile != null)
+            {
+                try
+                {
                     // here we don't need to lock over the cache item
                     // because it was still not added in the cache
-                    stream = CreateStream(newItem, entryName, filename);
+                    stream = CreateStream(cacheZipFile, entryName, filename);
 
-                    if (!_zipFileCache.TryAdd(filename, newItem))
+                    if (!_zipFileCache.TryAdd(filename, cacheZipFile))
                     {
                         // some other thread could of added it already, lets dispose ours
-                        newItem.Dispose();
+                        cacheZipFile.Dispose();
                     }
                 }
                 catch (Exception exception)
