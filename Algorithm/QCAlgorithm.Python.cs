@@ -677,11 +677,13 @@ namespace QuantConnect.Algorithm
         /// <param name="start">The start time in the algorithm's time zone</param>
         /// <param name="end">The end time in the algorithm's time zone</param>
         /// <param name="resolution">The resolution to request</param>
+        /// <param name="fillForward">True to fill forward missing data, false otherwise</param>
+        /// <param name="extendedMarket">True to include extended market hours data, false otherwise</param>
         /// <returns>A python dictionary with pandas DataFrame containing the requested historical data</returns>
-        public PyObject History(PyObject tickers, DateTime start, DateTime end, Resolution? resolution = null)
+        public PyObject History(PyObject tickers, DateTime start, DateTime end, Resolution? resolution = null, bool? fillForward = null, bool? extendedMarket = null)
         {
             var symbols = tickers.ConvertToSymbolEnumerable();
-            return PandasConverter.GetDataFrame(History(symbols, start, end, resolution));
+            return PandasConverter.GetDataFrame(History(symbols, start, end, resolution, fillForward, extendedMarket));
         }
 
         /// <summary>
