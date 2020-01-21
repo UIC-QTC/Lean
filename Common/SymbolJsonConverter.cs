@@ -42,6 +42,8 @@ namespace QuantConnect
             writer.WriteValue(symbol.ID.ToString());
             writer.WritePropertyName("Permtick");
             writer.WriteValue(symbol.Value);
+            writer.WritePropertyName("FIGI");
+            writer.WriteValue(symbol.FIGI);
             if (symbol.HasUnderlying)
             {
                 writer.WritePropertyName("Underlying");

@@ -742,6 +742,7 @@
     <Compile Include="OS.cs" />
     <Compile Include="Algorithm\Framework\Alphas\InsightDirection.cs" />
     <Compile Include="Algorithm\Framework\Alphas\InsightType.cs" />
+    <Compile Include="SidFigiMapper.cs" />
     <Compile Include="Statistics\AlgorithmPerformance.cs" />
     <Compile Include="Statistics\FitnessScoreManager.cs" />
     <Compile Include="Statistics\KellyCriterionManager.cs" />

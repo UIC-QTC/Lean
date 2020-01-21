@@ -1,4 +1,4 @@
-﻿/*
+/*
  * QUANTCONNECT.COM - Democratizing Finance, Empowering Individuals.
  * Lean Algorithmic Trading Engine v2.0. Copyright 2014 QuantConnect Corporation.
  *
@@ -16,6 +16,7 @@
 
 using System;
 using Newtonsoft.Json;
+using QuantConnect.Util;
 using static QuantConnect.StringExtensions;
 
 namespace QuantConnect
@@ -30,6 +31,11 @@ namespace QuantConnect
     {
         // for performance we register how we compare with empty
         private bool? _isEmpty;
+        
+        private string _figi;
+        
+        private static SidFigiMapper _sidFigiMapper = new SidFigiMapper();
+
 
         /// <summary>
         /// Represents an unassigned symbol. This is intended to be used as an
@@ -41,6 +47,14 @@ namespace QuantConnect
         /// Represents no symbol. This is intended to be used when no symbol is explicitly intended
         /// </summary>
         public static readonly Symbol None = new Symbol(SecurityIdentifier.None, "NONE");
+
+        /// <summary>
+        /// The Financial Instrument Global Identifier (FIGI) identifier for this security.
+        /// </summary>
+        /// <value>
+        /// FIGI identifier.
+        /// </value>
+        public string FIGI => GetFigui();
 
         /// <summary>
         /// Provides a convenience method for creating a Symbol for most security types.
@@ -231,6 +245,20 @@ namespace QuantConnect
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Checks this security FIGI.
+        /// </summary>
+        /// <returns>FIGI identifier for this security</returns>
+        private string GetFigui()
+        {
+            if (_figi.IsNullOrEmpty())
+            {
+                _figi = _sidFigiMapper.LookUpFigi(ID);
+            }
+
+            return _figi;
         }
 
         #region Properties
