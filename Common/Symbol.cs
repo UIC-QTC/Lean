@@ -296,6 +296,7 @@ namespace QuantConnect
             get { return ID.SecurityType; }
         }
 
+        public bool SidFigiMapLoaded => _sidFigiMapper.MapLoaded;
 
         #endregion
 

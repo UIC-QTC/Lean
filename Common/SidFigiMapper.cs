@@ -10,6 +10,7 @@ namespace QuantConnect
     internal class SidFigiMapper
     {
         private Lazy<ConcurrentDictionary<SecurityIdentifier, string>> _sidFigiMap = new Lazy<ConcurrentDictionary<SecurityIdentifier, string>>(Initialize, LazyThreadSafetyMode.ExecutionAndPublication);
+        public bool MapLoaded => _sidFigiMap.IsValueCreated;
 
         private static ConcurrentDictionary<SecurityIdentifier, string> Initialize()
         {
