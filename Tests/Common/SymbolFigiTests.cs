@@ -92,7 +92,7 @@ namespace QuantConnect.Tests.Common
                     mockedNas.FullName,
                     SecurityType.Equity.SecurityTypeToLower(),
                     Market.USA.ToLowerInvariant(),
-                    "map_files",
+                    "sid_figi_map",
                     "symbol_figi_map.csv"
                 )
             );

@@ -15,7 +15,7 @@ namespace QuantConnect
         private static ConcurrentDictionary<SecurityIdentifier, string> Initialize()
         {
             var sidFigiMapFile = new FileInfo(Path.Combine(Globals.DataFolder, SecurityType.Equity.SecurityTypeToLower(),
-                Market.USA.ToLowerInvariant(), "map_files", "symbol_figi_map.csv"));
+                Market.USA.ToLowerInvariant(), "sid_figi_map", "symbol_figi_map.csv"));
 
             if (sidFigiMapFile.Exists)
             {
