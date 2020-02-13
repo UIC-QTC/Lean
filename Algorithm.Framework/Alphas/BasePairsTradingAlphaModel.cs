@@ -17,8 +17,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using QuantConnect.Data;
+using QuantConnect.Data.Consolidators;
 using QuantConnect.Data.UniverseSelection;
 using QuantConnect.Indicators;
+using QuantConnect.Interfaces;
 using QuantConnect.Securities;
 using static System.FormattableString;
 
@@ -36,6 +38,7 @@ namespace QuantConnect.Algorithm.Framework.Alphas
         private readonly TimeSpan _predictionInterval;
         private readonly decimal _threshold;
         private readonly Dictionary<Tuple<Symbol, Symbol>, PairData> _pairs;
+        private readonly Dictionary<Symbol, AssetPrice> _pricesBySymbol;
 
         /// <summary>
         /// List of security objects present in the universe
@@ -59,6 +62,7 @@ namespace QuantConnect.Algorithm.Framework.Alphas
             _threshold = threshold;
             _predictionInterval = _resolution.ToTimeSpan().Multiply(_lookback);
             _pairs = new Dictionary<Tuple<Symbol, Symbol>, PairData>();
+            _pricesBySymbol = new Dictionary<Symbol, AssetPrice>();
 
             Securities = new HashSet<Security>();
             Name = Invariant($"{nameof(BasePairsTradingAlphaModel)}({_lookback},{_resolution},{_threshold.Normalize()})");
@@ -99,6 +103,12 @@ namespace QuantConnect.Algorithm.Framework.Alphas
             {
                 var symbol = security.Symbol;
                 var keys = _pairs.Keys.Where(k => k.Item1 == symbol || k.Item2 == symbol).ToList();
+
+                if (_pricesBySymbol.ContainsKey(symbol))
+                {
+                    _pricesBySymbol[symbol].RemoveConsolidator();
+                    _pricesBySymbol.Remove(symbol);
+                }
 
                 foreach (var key in keys)
                 {
@@ -141,9 +151,49 @@ namespace QuantConnect.Algorithm.Framework.Alphas
                         continue;
                     }
 
-                    var pairData = new PairData(algorithm, assetI, assetJ, _predictionInterval, _threshold);
+                    AssetPrice assetPriceI;
+                    if (!_pricesBySymbol.TryGetValue(assetI, out assetPriceI))
+                    {
+                        assetPriceI = new AssetPrice(algorithm, assetI);
+                        _pricesBySymbol[assetI] = assetPriceI;
+                    }
+
+                    AssetPrice assetPriceJ;
+                    if (!_pricesBySymbol.TryGetValue(assetJ, out assetPriceJ))
+                    {
+                        assetPriceJ = new AssetPrice(algorithm, assetJ);
+                        _pricesBySymbol[assetJ] = assetPriceJ;
+                    }
+
+                    var pairData = new PairData(assetPriceI, assetPriceJ, _predictionInterval, _threshold);
                     _pairs.Add(pairSymbol, pairData);
                 }
+            }
+        }
+
+        private class AssetPrice
+        {
+            private readonly IAlgorithm _algorithm;
+            private readonly IDataConsolidator _consolidator;
+
+            public Symbol Symbol { get; }
+            public Identity Price { get; }
+
+            public AssetPrice(QCAlgorithm algorithm, Symbol symbol)
+            {
+                _algorithm = algorithm;
+
+                Symbol = symbol;
+                Price = new Identity(symbol.ToString());
+
+                var resolution = algorithm.GetSubscription(symbol).Resolution;
+                _consolidator = algorithm.ResolveConsolidator(symbol, resolution);
+                algorithm.RegisterIndicator(symbol, Price, _consolidator);
+            }
+
+            public void RemoveConsolidator()
+            {
+                _algorithm.SubscriptionManager.RemoveConsolidator(Symbol, _consolidator);
             }
         }
 
@@ -161,8 +211,6 @@ namespace QuantConnect.Algorithm.Framework.Alphas
             private readonly Symbol _asset1;
             private readonly Symbol _asset2;
 
-            private readonly IndicatorBase<IndicatorDataPoint> _asset1Price;
-            private readonly IndicatorBase<IndicatorDataPoint> _asset2Price;
             private readonly IndicatorBase<IndicatorDataPoint> _ratio;
             private readonly IndicatorBase<IndicatorDataPoint> _mean;
             private readonly IndicatorBase<IndicatorDataPoint> _upperThreshold;
@@ -172,20 +220,16 @@ namespace QuantConnect.Algorithm.Framework.Alphas
             /// <summary>
             /// Create a new pair
             /// </summary>
-            /// <param name="algorithm">The algorithm instance that experienced the change in securities</param>
-            /// <param name="asset1">The first asset's symbol in the pair</param>
-            /// <param name="asset2">The second asset's symbol in the pair</param>
+            /// <param name="assetPrice1">The first asset's price in the pair</param>
+            /// <param name="assetPrice2">The second asset's price in the pair</param>
             /// <param name="period">Period over which this insight is expected to come to fruition</param>
             /// <param name="threshold">The percent [0, 100] deviation of the ratio from the mean before emitting an insight</param>
-            public PairData(QCAlgorithm algorithm, Symbol asset1, Symbol asset2, TimeSpan period, decimal threshold)
+            public PairData(AssetPrice assetPrice1, AssetPrice assetPrice2, TimeSpan period, decimal threshold)
             {
-                _asset1 = asset1;
-                _asset2 = asset2;
+                _asset1 = assetPrice1.Symbol;
+                _asset2 = assetPrice2.Symbol;
 
-                _asset1Price = algorithm.Identity(asset1);
-                _asset2Price = algorithm.Identity(asset2);
-
-                _ratio = _asset1Price.Over(_asset2Price);
+                _ratio = assetPrice1.Price.Over(assetPrice2.Price);
                 _mean = new ExponentialMovingAverage(500).Of(_ratio);
 
                 var upper = new ConstantIndicator<IndicatorDataPoint>("ct", 1 + threshold / 100m);
