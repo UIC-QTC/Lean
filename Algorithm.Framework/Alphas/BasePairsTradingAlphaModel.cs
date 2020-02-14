@@ -33,6 +33,7 @@ namespace QuantConnect.Algorithm.Framework.Alphas
     /// </summary>
     public class BasePairsTradingAlphaModel : AlphaModel
     {
+        private readonly bool _allowWarmup;
         private readonly int _period;
         private readonly int _lookback;
         private readonly Resolution _resolution;
@@ -158,14 +159,14 @@ namespace QuantConnect.Algorithm.Framework.Alphas
                     AssetPrice assetPriceI;
                     if (!_pricesBySymbol.TryGetValue(assetI, out assetPriceI))
                     {
-                        assetPriceI = new AssetPrice(algorithm, assetI, _period);
+                        assetPriceI = new AssetPrice(algorithm, assetI, _period, _resolution);
                         _pricesBySymbol[assetI] = assetPriceI;
                     }
 
                     AssetPrice assetPriceJ;
                     if (!_pricesBySymbol.TryGetValue(assetJ, out assetPriceJ))
                     {
-                        assetPriceJ = new AssetPrice(algorithm, assetJ, _period);
+                        assetPriceJ = new AssetPrice(algorithm, assetJ, _period, _resolution);
                         _pricesBySymbol[assetJ] = assetPriceJ;
                     }
 
@@ -193,11 +194,11 @@ namespace QuantConnect.Algorithm.Framework.Alphas
             /// <param name="algorithm">The algorithm instance</param>
             /// <param name="symbol">The symbol of the asset price</param>
             /// <param name="size">The size of rolling window that keeps the historical price</param>
-            public AssetPrice(QCAlgorithm algorithm, Symbol symbol, int size)
+            /// <param name="resolution">The resolution of the consolidated price</param>
+            public AssetPrice(QCAlgorithm algorithm, Symbol symbol, int size, Resolution resolution)
             {
-                var resolution = algorithm.GetSubscription(symbol).Resolution;
-                _consolidator = algorithm.ResolveConsolidator(symbol, resolution);
                 _algorithm = algorithm;
+                _consolidator = algorithm.ResolveConsolidator(symbol, resolution);
 
                 Symbol = symbol;
                 Price = new Identity(symbol.ToString());
@@ -206,14 +207,11 @@ namespace QuantConnect.Algorithm.Framework.Alphas
                 // Register the indicator to the consolidator.
                 algorithm.RegisterIndicator(symbol, Price, _consolidator);
 
-                // In live mode, we will automatically populate a rolling window
+                // Automatically populate a rolling window
                 // and warm it up by pumping historical data into the consolidator
-                if (algorithm.LiveMode)
-                {
-                    Price.Updated += (s, e) => Window.Add(e);
-                    algorithm.History(new[] { symbol }, (int)(1.10 * size))
-                        .PushThrough(data => _consolidator.Update(data));
-                }
+                Price.Updated += (s, e) => Window.Add(e);
+                algorithm.History(new[] { symbol }, (int)(1.10 * size), resolution)
+                    .PushThrough(data => _consolidator.Update(data));
             }
 
             /// <summary>
