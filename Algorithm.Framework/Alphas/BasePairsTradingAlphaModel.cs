@@ -33,6 +33,7 @@ namespace QuantConnect.Algorithm.Framework.Alphas
     /// </summary>
     public class BasePairsTradingAlphaModel : AlphaModel
     {
+        private readonly int _period;
         private readonly int _lookback;
         private readonly Resolution _resolution;
         private readonly TimeSpan _predictionInterval;
@@ -54,12 +55,14 @@ namespace QuantConnect.Algorithm.Framework.Alphas
         public BasePairsTradingAlphaModel(
             int lookback = 1,
             Resolution resolution = Resolution.Daily,
-            decimal threshold = 1m
+            decimal threshold = 1m,
+            int period = 500
             )
         {
             _lookback = lookback;
             _resolution = resolution;
             _threshold = threshold;
+            _period = period;
             _predictionInterval = _resolution.ToTimeSpan().Multiply(_lookback);
             _pairs = new Dictionary<Tuple<Symbol, Symbol>, PairData>();
             _pricesBySymbol = new Dictionary<Symbol, AssetPrice>();
@@ -154,23 +157,26 @@ namespace QuantConnect.Algorithm.Framework.Alphas
                     AssetPrice assetPriceI;
                     if (!_pricesBySymbol.TryGetValue(assetI, out assetPriceI))
                     {
-                        assetPriceI = new AssetPrice(algorithm, assetI);
+                        assetPriceI = new AssetPrice(algorithm, assetI, _period);
                         _pricesBySymbol[assetI] = assetPriceI;
                     }
 
                     AssetPrice assetPriceJ;
                     if (!_pricesBySymbol.TryGetValue(assetJ, out assetPriceJ))
                     {
-                        assetPriceJ = new AssetPrice(algorithm, assetJ);
+                        assetPriceJ = new AssetPrice(algorithm, assetJ, _period);
                         _pricesBySymbol[assetJ] = assetPriceJ;
                     }
 
-                    var pairData = new PairData(assetPriceI, assetPriceJ, _predictionInterval, _threshold);
+                    var pairData = new PairData(assetPriceI, assetPriceJ, _period, _predictionInterval, _threshold);
                     _pairs.Add(pairSymbol, pairData);
                 }
             }
         }
 
+        /// <summary>
+        /// Represents the price of a given asset and its history
+        /// </summary>
         private class AssetPrice
         {
             private readonly IAlgorithm _algorithm;
@@ -178,19 +184,35 @@ namespace QuantConnect.Algorithm.Framework.Alphas
 
             public Symbol Symbol { get; }
             public Identity Price { get; }
+            public RollingWindow<IndicatorDataPoint> Window { get; }
 
-            public AssetPrice(QCAlgorithm algorithm, Symbol symbol)
+            /// <summary>
+            /// Creates a new instance of <see cref="AssetPrice"/>.
+            /// </summary>
+            /// <param name="algorithm">The algorithm instance</param>
+            /// <param name="symbol">The symbol of the asset price</param>
+            /// <param name="size">The size of rolling window that keeps the historical price</param>
+            public AssetPrice(QCAlgorithm algorithm, Symbol symbol, int size)
             {
+                var resolution = algorithm.GetSubscription(symbol).Resolution;
+                _consolidator = algorithm.ResolveConsolidator(symbol, resolution);
                 _algorithm = algorithm;
 
                 Symbol = symbol;
                 Price = new Identity(symbol.ToString());
+                Window = new RollingWindow<IndicatorDataPoint>(size);
+                Price.Updated += (s, e) => Window.Add(e);
 
-                var resolution = algorithm.GetSubscription(symbol).Resolution;
-                _consolidator = algorithm.ResolveConsolidator(symbol, resolution);
+                // Register the indicator to the consolidator.
                 algorithm.RegisterIndicator(symbol, Price, _consolidator);
+                // Update the consolidator: it will update the indicator that will update the rolling window
+                algorithm.History(new[] { symbol }, (int)(1.10 * size))
+                    .PushThrough(data => _consolidator.Update(data));
             }
 
+            /// <summary>
+            /// Removes the specified consolidator for the symbol
+            /// </summary>
             public void RemoveConsolidator()
             {
                 _algorithm.SubscriptionManager.RemoveConsolidator(Symbol, _consolidator);
@@ -222,15 +244,16 @@ namespace QuantConnect.Algorithm.Framework.Alphas
             /// </summary>
             /// <param name="assetPrice1">The first asset's price in the pair</param>
             /// <param name="assetPrice2">The second asset's price in the pair</param>
-            /// <param name="period">Period over which this insight is expected to come to fruition</param>
+            /// <param name="period">The period of the EMA</param>
+            /// <param name="predictionInterval">Period over which this insight is expected to come to fruition</param>
             /// <param name="threshold">The percent [0, 100] deviation of the ratio from the mean before emitting an insight</param>
-            public PairData(AssetPrice assetPrice1, AssetPrice assetPrice2, TimeSpan period, decimal threshold)
+            public PairData(AssetPrice assetPrice1, AssetPrice assetPrice2, int period, TimeSpan predictionInterval, decimal threshold)
             {
                 _asset1 = assetPrice1.Symbol;
                 _asset2 = assetPrice2.Symbol;
 
                 _ratio = assetPrice1.Price.Over(assetPrice2.Price);
-                _mean = new ExponentialMovingAverage(500).Of(_ratio);
+                _mean = new ExponentialMovingAverage(period).Of(_ratio);
 
                 var upper = new ConstantIndicator<IndicatorDataPoint>("ct", 1 + threshold / 100m);
                 _upperThreshold = _mean.Times(upper, "UpperThreshold");
@@ -238,7 +261,25 @@ namespace QuantConnect.Algorithm.Framework.Alphas
                 var lower = new ConstantIndicator<IndicatorDataPoint>("ct", 1 - threshold / 100m);
                 _lowerThreshold = _mean.Times(lower, "LowerThreshold");
 
-                _predictionInterval = period;
+
+                for (var i = assetPrice1.Window.Count - 1; i >= 0; i--)
+                {
+                    var dataPoint1 = assetPrice1.Window[i];
+                    var endTime = dataPoint1.EndTime;
+
+                    for (var j = assetPrice2.Window.Count - 1; j >= i; j--)
+                    {
+                        var dataPoint2 = assetPrice2.Window[j];
+                        if (endTime == dataPoint2.EndTime)
+                        {
+                            var ratio = dataPoint1 / dataPoint2;
+                            _mean.Update(endTime, ratio);
+                            break;
+                        }
+                    }
+                }
+
+                _predictionInterval = predictionInterval;
             }
 
             /// <summary>
