@@ -52,6 +52,7 @@ namespace QuantConnect.Algorithm.Framework.Alphas
         /// <param name="lookback">Lookback period of the analysis</param>
         /// <param name="resolution">Analysis resolution</param>
         /// <param name="threshold">The percent [0, 100] deviation of the ratio from the mean before emitting an insight</param>
+        /// <param name="period">Period of the EMA of the price ratio between assets</param>
         public BasePairsTradingAlphaModel(
             int lookback = 1,
             Resolution resolution = Resolution.Daily,
@@ -68,7 +69,7 @@ namespace QuantConnect.Algorithm.Framework.Alphas
             _pricesBySymbol = new Dictionary<Symbol, AssetPrice>();
 
             Securities = new HashSet<Security>();
-            Name = Invariant($"{nameof(BasePairsTradingAlphaModel)}({_lookback},{_resolution},{_threshold.Normalize()})");
+            Name = Invariant($"{nameof(BasePairsTradingAlphaModel)}({_lookback},{_resolution},{_threshold.Normalize()},{period})");
         }
 
         /// <summary>
