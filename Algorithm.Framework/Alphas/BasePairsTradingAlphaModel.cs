@@ -202,13 +202,18 @@ namespace QuantConnect.Algorithm.Framework.Alphas
                 Symbol = symbol;
                 Price = new Identity(symbol.ToString());
                 Window = new RollingWindow<IndicatorDataPoint>(size);
-                Price.Updated += (s, e) => Window.Add(e);
 
                 // Register the indicator to the consolidator.
                 algorithm.RegisterIndicator(symbol, Price, _consolidator);
-                // Update the consolidator: it will update the indicator that will update the rolling window
-                algorithm.History(new[] { symbol }, (int)(1.10 * size))
-                    .PushThrough(data => _consolidator.Update(data));
+
+                // In live mode, we will automatically populate a rolling window
+                // and warm it up by pumping historical data into the consolidator
+                if (algorithm.LiveMode)
+                {
+                    Price.Updated += (s, e) => Window.Add(e);
+                    algorithm.History(new[] { symbol }, (int)(1.10 * size))
+                        .PushThrough(data => _consolidator.Update(data));
+                }
             }
 
             /// <summary>
