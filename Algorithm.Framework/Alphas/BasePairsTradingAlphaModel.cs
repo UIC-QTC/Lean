@@ -45,7 +45,7 @@ namespace QuantConnect.Algorithm.Framework.Alphas
         /// <summary>
         /// List of security objects present in the universe
         /// </summary>
-        public HashSet<Security> Securities { get; }
+        protected HashSet<Security> Securities { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BasePairsTradingAlphaModel"/> class
@@ -111,7 +111,7 @@ namespace QuantConnect.Algorithm.Framework.Alphas
 
                 if (_pricesBySymbol.ContainsKey(symbol))
                 {
-                    _pricesBySymbol[symbol].RemoveConsolidator();
+                    _pricesBySymbol[symbol].Dispose();
                     _pricesBySymbol.Remove(symbol);
                 }
 
@@ -129,11 +129,12 @@ namespace QuantConnect.Algorithm.Framework.Alphas
         /// <param name="asset1">The first asset's symbol in the pair</param>
         /// <param name="asset2">The second asset's symbol in the pair</param>
         /// <returns>True if the statistical test for the pair is successful</returns>
-        public virtual bool HasPassedTest(QCAlgorithm algorithm, Symbol asset1, Symbol asset2) => true;
+        protected virtual bool HasPassedTest(QCAlgorithm algorithm, Symbol asset1, Symbol asset2) => true;
 
         private void UpdatePairs(QCAlgorithm algorithm)
         {
             var assets = Securities.Select(x => x.Symbol).ToArray();
+            var symbols = new List<Symbol>();
 
             for (var i = 0; i < assets.Length; i++)
             {
@@ -159,6 +160,7 @@ namespace QuantConnect.Algorithm.Framework.Alphas
                     AssetPrice assetPriceI;
                     if (!_pricesBySymbol.TryGetValue(assetI, out assetPriceI))
                     {
+                        symbols.Add(assetI);
                         assetPriceI = new AssetPrice(algorithm, assetI, _period, _resolution);
                         _pricesBySymbol[assetI] = assetPriceI;
                     }
@@ -166,6 +168,7 @@ namespace QuantConnect.Algorithm.Framework.Alphas
                     AssetPrice assetPriceJ;
                     if (!_pricesBySymbol.TryGetValue(assetJ, out assetPriceJ))
                     {
+                        symbols.Add(assetJ);
                         assetPriceJ = new AssetPrice(algorithm, assetJ, _period, _resolution);
                         _pricesBySymbol[assetJ] = assetPriceJ;
                     }
@@ -174,12 +177,20 @@ namespace QuantConnect.Algorithm.Framework.Alphas
                     _pairs.Add(pairSymbol, pairData);
                 }
             }
+
+            algorithm.History(symbols, (int)(_period * 1.1), _resolution)
+                .PushThrough(data => _pricesBySymbol[data.Symbol].UpdateConsolidator(data));
+
+            foreach (var pair in _pairs)
+            {
+                pair.Value.WarmUp();
+            }
         }
 
         /// <summary>
         /// Represents the price of a given asset and its history
         /// </summary>
-        private class AssetPrice
+        private class AssetPrice : IDisposable
         {
             private readonly IAlgorithm _algorithm;
             private readonly IDataConsolidator _consolidator;
@@ -210,14 +221,22 @@ namespace QuantConnect.Algorithm.Framework.Alphas
                 // Automatically populate a rolling window
                 // and warm it up by pumping historical data into the consolidator
                 Price.Updated += (s, e) => Window.Add(e);
-                algorithm.History(new[] { symbol }, (int)(1.10 * size), resolution)
-                    .PushThrough(data => _consolidator.Update(data));
             }
 
             /// <summary>
+            /// Updates this object consolidator with the specific data
+            /// </summary>
+            /// <param name="data"></param>
+            public void UpdateConsolidator(BaseData data)
+            {
+                _consolidator.Update(data);
+            }
+
+            /// <summary>
+            /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
             /// Removes the specified consolidator for the symbol
             /// </summary>
-            public void RemoveConsolidator()
+            public void Dispose()
             {
                 _algorithm.SubscriptionManager.RemoveConsolidator(Symbol, _consolidator);
             }
@@ -234,8 +253,8 @@ namespace QuantConnect.Algorithm.Framework.Alphas
 
             private State _state = State.FlatRatio;
 
-            private readonly Symbol _asset1;
-            private readonly Symbol _asset2;
+            private readonly AssetPrice _assetPrice1;
+            private readonly AssetPrice _assetPrice2;
 
             private readonly IndicatorBase<IndicatorDataPoint> _ratio;
             private readonly IndicatorBase<IndicatorDataPoint> _mean;
@@ -253,8 +272,8 @@ namespace QuantConnect.Algorithm.Framework.Alphas
             /// <param name="threshold">The percent [0, 100] deviation of the ratio from the mean before emitting an insight</param>
             public PairData(AssetPrice assetPrice1, AssetPrice assetPrice2, int period, TimeSpan predictionInterval, decimal threshold)
             {
-                _asset1 = assetPrice1.Symbol;
-                _asset2 = assetPrice2.Symbol;
+                _assetPrice1 = assetPrice1;
+                _assetPrice2 = assetPrice2;
 
                 _ratio = assetPrice1.Price.Over(assetPrice2.Price);
                 _mean = new ExponentialMovingAverage(period).Of(_ratio);
@@ -265,15 +284,27 @@ namespace QuantConnect.Algorithm.Framework.Alphas
                 var lower = new ConstantIndicator<IndicatorDataPoint>("ct", 1 - threshold / 100m);
                 _lowerThreshold = _mean.Times(lower, "LowerThreshold");
 
+                _predictionInterval = predictionInterval;
+            }
 
-                for (var i = assetPrice1.Window.Count - 1; i >= 0; i--)
+            /// <summary>
+            /// Warms up the internal
+            /// </summary>
+            public void WarmUp()
+            {
+                if (_mean.IsReady)
                 {
-                    var dataPoint1 = assetPrice1.Window[i];
+                    return;
+                }
+
+                for (var i = _assetPrice1.Window.Count - 1; i >= 0; i--)
+                {
+                    var dataPoint1 = _assetPrice1.Window[i];
                     var endTime = dataPoint1.EndTime;
 
-                    for (var j = assetPrice2.Window.Count - 1; j >= i; j--)
+                    for (var j = _assetPrice2.Window.Count - 1; j >= i; j--)
                     {
-                        var dataPoint2 = assetPrice2.Window[j];
+                        var dataPoint2 = _assetPrice2.Window[j];
                         if (endTime == dataPoint2.EndTime)
                         {
                             var ratio = dataPoint1 / dataPoint2;
@@ -282,8 +313,6 @@ namespace QuantConnect.Algorithm.Framework.Alphas
                         }
                     }
                 }
-
-                _predictionInterval = predictionInterval;
             }
 
             /// <summary>
@@ -303,8 +332,8 @@ namespace QuantConnect.Algorithm.Framework.Alphas
                     _state = State.LongRatio;
 
                     // asset1/asset2 is more than 2 std away from mean, short asset1, long asset2
-                    var shortAsset1 = Insight.Price(_asset1, _predictionInterval, InsightDirection.Down);
-                    var longAsset2 = Insight.Price(_asset2, _predictionInterval, InsightDirection.Up);
+                    var shortAsset1 = Insight.Price(_assetPrice1.Symbol, _predictionInterval, InsightDirection.Down);
+                    var longAsset2 = Insight.Price(_assetPrice2.Symbol, _predictionInterval, InsightDirection.Up);
 
                     // creates a group id and set the GroupId property on each insight object
                     return Insight.Group(shortAsset1, longAsset2);
@@ -316,8 +345,8 @@ namespace QuantConnect.Algorithm.Framework.Alphas
                     _state = State.ShortRatio;
 
                     // asset1/asset2 is less than 2 std away from mean, long asset1, short asset2
-                    var longAsset1 = Insight.Price(_asset1, _predictionInterval, InsightDirection.Up);
-                    var shortAsset2 = Insight.Price(_asset2, _predictionInterval, InsightDirection.Down);
+                    var longAsset1 = Insight.Price(_assetPrice1.Symbol, _predictionInterval, InsightDirection.Up);
+                    var shortAsset2 = Insight.Price(_assetPrice2.Symbol, _predictionInterval, InsightDirection.Down);
 
                     // creates a group id and set the GroupId property on each insight object
                     return Insight.Group(longAsset1, shortAsset2);

@@ -90,7 +90,7 @@ namespace QuantConnect.Algorithm.Framework.Alphas
         /// <param name="asset1">The first asset's symbol in the pair</param>
         /// <param name="asset2">The second asset's symbol in the pair</param>
         /// <returns>True if the statistical test for the pair is successful</returns>
-        public override bool HasPassedTest(QCAlgorithm algorithm, Symbol asset1, Symbol asset2)
+        protected override bool HasPassedTest(QCAlgorithm algorithm, Symbol asset1, Symbol asset2)
         {
             return _bestPair != null && asset1 == _bestPair.Item1 && asset2 == _bestPair.Item2;
         }
