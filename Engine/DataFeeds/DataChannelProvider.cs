@@ -16,6 +16,7 @@
 using System;
 using QuantConnect.Data;
 using QuantConnect.Packets;
+using QuantConnect.Data.Custom.Estimize;
 
 namespace QuantConnect.Lean.Engine.DataFeeds
 {
@@ -29,6 +30,13 @@ namespace QuantConnect.Lean.Engine.DataFeeds
         /// </summary>
         public virtual bool ShouldStreamSubscription(LiveNodePacket job, SubscriptionDataConfig config)
         {
+            if (config.Type == typeof(EstimizeRelease) ||
+                config.Type == typeof(EstimizeConsensus) ||
+                config.Type == typeof(EstimizeEstimate))
+            {
+                return true;
+            }
+
             return IsStreamingType(config) || !config.IsCustomData;
         }
 
