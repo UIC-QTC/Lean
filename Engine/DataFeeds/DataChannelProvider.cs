@@ -15,6 +15,7 @@
 
 using System;
 using QuantConnect.Data;
+using QuantConnect.Data.Custom.Benzinga;
 
 namespace QuantConnect.Lean.Engine.DataFeeds
 {
@@ -28,6 +29,11 @@ namespace QuantConnect.Lean.Engine.DataFeeds
         /// </summary>
         public virtual bool ShouldStreamSubscription(SubscriptionDataConfig config)
         {
+            if (config.Type == typeof(BenzingaNews))
+            {
+                return true;
+            }
+
             return IsStreamingType(config) || !config.IsCustomData;
         }
 
