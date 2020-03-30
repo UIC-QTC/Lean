@@ -15,8 +15,13 @@
 
 using System;
 using QuantConnect.Data;
+using QuantConnect.Data.Custom.Benzinga;
 using QuantConnect.Packets;
 using QuantConnect.Data.Custom.Estimize;
+using QuantConnect.Data.Custom.PsychSignal;
+using QuantConnect.Data.Custom.SmartInsider;
+using QuantConnect.Data.Custom.Tiingo;
+using QuantConnect.Data.Custom.TradingEconomics;
 
 namespace QuantConnect.Lean.Engine.DataFeeds
 {
@@ -30,9 +35,15 @@ namespace QuantConnect.Lean.Engine.DataFeeds
         /// </summary>
         public virtual bool ShouldStreamSubscription(LiveNodePacket job, SubscriptionDataConfig config)
         {
-            if (config.Type == typeof(EstimizeRelease) ||
+            if (config.Type == typeof(TiingoNews) ||
+                config.Type == typeof(PsychSignalSentiment) ||
+                config.Type == typeof(EstimizeRelease) ||
                 config.Type == typeof(EstimizeConsensus) ||
-                config.Type == typeof(EstimizeEstimate))
+                config.Type == typeof(EstimizeEstimate) ||
+                config.Type == typeof(TradingEconomicsCalendar) ||
+                config.Type == typeof(BenzingaNews) ||
+                config.Type == typeof(SmartInsiderIntention) ||
+                config.Type == typeof(SmartInsiderTransaction))
             {
                 return true;
             }
