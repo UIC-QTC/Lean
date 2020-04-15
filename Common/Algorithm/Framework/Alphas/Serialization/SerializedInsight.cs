@@ -165,6 +165,12 @@ namespace QuantConnect.Algorithm.Framework.Alphas.Serialization
         public decimal EstimatedValue { get; set; }
 
         /// <summary>
+        /// Enum indicating the Insight creation moment.
+        /// </summary>
+        [JsonProperty("source")]
+        public InsightSource Source { get; set; }
+
+        /// <summary>
         /// Initializes a new default instance of the <see cref="SerializedInsight"/> class
         /// </summary>
         public SerializedInsight()
@@ -196,6 +202,7 @@ namespace QuantConnect.Algorithm.Framework.Alphas.Serialization
             ScoreDirection = insight.Score.Direction;
             EstimatedValue = insight.EstimatedValue;
             Weight = insight.Weight;
+            Source = insight.Source;
         }
     }
 }

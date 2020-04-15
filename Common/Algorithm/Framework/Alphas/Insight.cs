@@ -123,6 +123,11 @@ namespace QuantConnect.Algorithm.Framework.Alphas
         public decimal EstimatedValue { get; internal set; }
 
         /// <summary>
+        /// Enum indicating the Insight creation moment.
+        /// </summary>
+        public InsightSource Source { get; set; }
+
+        /// <summary>
         /// Determines whether or not this insight is considered expired at the specified <paramref name="utcTime"/>
         /// </summary>
         /// <param name="utcTime">The algorithm's current time in UTC. See <see cref="IAlgorithm.UtcTime"/></param>
@@ -438,7 +443,8 @@ namespace QuantConnect.Algorithm.Framework.Alphas
                 EstimatedValue = serializedInsight.EstimatedValue,
                 ReferenceValue = serializedInsight.ReferenceValue,
                 ReferenceValueFinal = serializedInsight.ReferenceValueFinal,
-                GroupId = string.IsNullOrEmpty(serializedInsight.GroupId) ? (Guid?) null : Guid.Parse(serializedInsight.GroupId)
+                GroupId = string.IsNullOrEmpty(serializedInsight.GroupId) ? (Guid?) null : Guid.Parse(serializedInsight.GroupId),
+                Source = serializedInsight.Source
             };
 
             // only set score values if non-zero or if they're the final scores
