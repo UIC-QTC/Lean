@@ -987,6 +987,9 @@ namespace QuantConnect.Lean.Engine.TransactionHandlers
                         orderEvent.LimitPrice = stopLimitOrder.LimitPrice;
                         orderEvent.StopPrice = stopLimitOrder.StopPrice;
                         break;
+                    case OrderType.OptionExercise:
+                        orderEvent.Quantity = orderEvent.FillQuantity;
+                        break;
                 }
 
                 //Apply the filled order to our portfolio:
