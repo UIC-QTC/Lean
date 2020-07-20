@@ -19,7 +19,6 @@ using QuantConnect.Configuration;
 using QuantConnect.Interfaces;
 using QuantConnect.Securities;
 using QuantConnect.Util;
-using RestSharp;
 
 namespace QuantConnect.Brokerages.Bitfinex
 {
@@ -48,7 +47,7 @@ namespace QuantConnect.Brokerages.Bitfinex
         public override Dictionary<string, string> BrokerageData => new Dictionary<string, string>
         {
             { "bitfinex-rest" , Config.Get("bitfinex-rest", "https://api.bitfinex.com")},
-            { "bitfinex-url" , Config.Get("bitfinex-url", "wss://api.bitfinex.com/ws")},
+            { "bitfinex-url" , Config.Get("bitfinex-url", "wss://api.bitfinex.com/ws/2")},
             { "bitfinex-api-key", Config.Get("bitfinex-api-key")},
             { "bitfinex-api-secret", Config.Get("bitfinex-api-secret")}
         };

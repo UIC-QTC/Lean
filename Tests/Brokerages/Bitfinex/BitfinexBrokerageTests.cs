@@ -47,14 +47,14 @@ namespace QuantConnect.Tests.Brokerages.Bitfinex
 
             var algorithm = new Mock<IAlgorithm>();
             algorithm.Setup(a => a.Transactions).Returns(transactions);
-            algorithm.Setup(a => a.BrokerageModel).Returns(new BitfinexBrokerageModel(AccountType.Margin));
+            algorithm.Setup(a => a.BrokerageModel).Returns(new BitfinexBrokerageModel());
             algorithm.Setup(a => a.Portfolio).Returns(new SecurityPortfolioManager(securities, transactions));
 
             var priceProvider = new Mock<IPriceProvider>();
             priceProvider.Setup(a => a.GetLastPrice(It.IsAny<Symbol>())).Returns(1.234m);
 
             return new BitfinexBrokerage(
-                    Config.Get("bitfinex-url", "wss://api.bitfinex.com/ws"),
+                    Config.Get("bitfinex-url", "wss://api.bitfinex.com/ws/2"),
                     Config.Get("bitfinex-rest", "https://api.bitfinex.com"),
                     Config.Get("bitfinex-api-key"),
                     Config.Get("bitfinex-api-secret"),
@@ -87,14 +87,19 @@ namespace QuantConnect.Tests.Brokerages.Bitfinex
         /// </summary>
         protected override decimal GetAskPrice(Symbol symbol)
         {
-            var tick = ((BitfinexBrokerage)this.Brokerage).GetTick(symbol);
+            var tick = ((BitfinexBrokerage)Brokerage).GetTick(symbol);
             return tick.AskPrice;
         }
 
         /// <summary>
-        /// Returns wether or not the brokers order methods implementation are async
+        /// Returns whether or not the brokers order methods implementation are async
         /// </summary>
-        protected override bool IsAsync() => false;
+        protected override bool IsAsync() => true;
+
+        /// <summary>
+        /// Returns whether or not the brokers order cancel method implementation is async
+        /// </summary>
+        protected override bool IsCancelAsync() => true;
 
         /// <summary>
         /// Gets the default order quantity
@@ -141,6 +146,12 @@ namespace QuantConnect.Tests.Brokerages.Bitfinex
         public override void LongFromShort(OrderTestParameters parameters)
         {
             base.LongFromShort(parameters);
+        }
+
+        [Test]
+        public override void GetCashBalanceContainsUSD()
+        {
+            Assert.Pass("USD currency is not required.");
         }
     }
 }

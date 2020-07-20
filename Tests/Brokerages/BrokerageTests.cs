@@ -420,7 +420,7 @@ namespace QuantConnect.Tests.Brokerages
         }
 
         [Test]
-        public void GetCashBalanceContainsUSD()
+        public virtual void GetCashBalanceContainsUSD()
         {
             Log.Trace("");
             Log.Trace("GET CASH BALANCE");
