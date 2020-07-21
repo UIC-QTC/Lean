@@ -355,8 +355,6 @@ namespace QuantConnect.Brokerages.Bitfinex
                     {
                         if (token[1][0].Type == JTokenType.Array)
                         {
-                            //Log.Trace(e.Message);
-
                             OnSnapshot(
                                 webSocket,
                                 channel.ToStringInvariant(),
@@ -380,12 +378,10 @@ namespace QuantConnect.Brokerages.Bitfinex
                     switch (raw.Event.ToLowerInvariant())
                     {
                         case "subscribed":
-                            Log.Trace(e.Message);
                             OnSubscribe(webSocket, token.ToObject<Messages.ChannelSubscription>());
                             return;
 
                         case "unsubscribed":
-                            Log.Trace(e.Message);
                             OnUnsubscribe(webSocket, token.ToObject<Messages.ChannelUnsubscribing>());
                             return;
 

@@ -80,7 +80,6 @@ namespace QuantConnect.Brokerages.Bitfinex
 
             var obj = new JsonArray { 0, "on", null, parameters };
             var json = JsonConvert.SerializeObject(obj);
-            Log.Trace(json);
             WebSocket.Send(json);
 
             return true;
@@ -112,7 +111,6 @@ namespace QuantConnect.Brokerages.Bitfinex
 
             var obj = new JsonArray { 0, "ou", null, parameters };
             var json = JsonConvert.SerializeObject(obj);
-            Log.Trace(json);
             WebSocket.Send(json);
 
             return true;
@@ -141,7 +139,6 @@ namespace QuantConnect.Brokerages.Bitfinex
 
             var obj = new JsonArray { 0, "oc", null, parameters };
             var json = JsonConvert.SerializeObject(obj);
-            Log.Trace(json);
             WebSocket.Send(json);
 
             return true;
