@@ -38,6 +38,9 @@ namespace QuantConnect.Brokerages.Bitfinex
     public partial class BitfinexBrokerage
     {
         private const string ApiVersion = "v2";
+        private const string RestApiUrl = "https://api.bitfinex.com";
+        private const string WebSocketUrl = "wss://api.bitfinex.com/ws/2";
+
         private readonly IAlgorithm _algorithm;
         private readonly RateGate _restRateLimiter = new RateGate(10, TimeSpan.FromMinutes(1));
         private readonly ConcurrentDictionary<int, decimal> _fills = new ConcurrentDictionary<int, decimal>();
@@ -56,31 +59,28 @@ namespace QuantConnect.Brokerages.Bitfinex
         /// <summary>
         /// Constructor for brokerage
         /// </summary>
-        /// <param name="wssUrl">websockets url</param>
-        /// <param name="restUrl">rest api url</param>
         /// <param name="apiKey">api key</param>
         /// <param name="apiSecret">api secret</param>
         /// <param name="algorithm">the algorithm instance is required to retrieve account type</param>
         /// <param name="priceProvider">The price provider for missing FX conversion rates</param>
-        public BitfinexBrokerage(string wssUrl, string restUrl, string apiKey, string apiSecret, IAlgorithm algorithm, IPriceProvider priceProvider)
-            : this(wssUrl, new WebSocketClientWrapper(), new RestClient(restUrl), apiKey, apiSecret, algorithm, priceProvider)
+        public BitfinexBrokerage(string apiKey, string apiSecret, IAlgorithm algorithm, IPriceProvider priceProvider)
+            : this(new WebSocketClientWrapper(), new RestClient(RestApiUrl), apiKey, apiSecret, algorithm, priceProvider)
         {
         }
 
         /// <summary>
         /// Constructor for brokerage
         /// </summary>
-        /// <param name="wssUrl">websockets url</param>
         /// <param name="websocket">instance of websockets client</param>
         /// <param name="restClient">instance of rest client</param>
         /// <param name="apiKey">api key</param>
         /// <param name="apiSecret">api secret</param>
         /// <param name="algorithm">the algorithm instance is required to retrieve account type</param>
         /// <param name="priceProvider">The price provider for missing FX conversion rates</param>
-        public BitfinexBrokerage(string wssUrl, IWebSocket websocket, IRestClient restClient, string apiKey, string apiSecret, IAlgorithm algorithm, IPriceProvider priceProvider)
-            : base(wssUrl, websocket, restClient, apiKey, apiSecret, Market.Bitfinex, "Bitfinex")
+        public BitfinexBrokerage(IWebSocket websocket, IRestClient restClient, string apiKey, string apiSecret, IAlgorithm algorithm, IPriceProvider priceProvider)
+            : base(WebSocketUrl, websocket, restClient, apiKey, apiSecret, Market.Bitfinex, "Bitfinex")
         {
-            _subscriptionManager = new BitfinexSubscriptionManager(this, wssUrl, _symbolMapper);
+            _subscriptionManager = new BitfinexSubscriptionManager(this, WebSocketUrl, _symbolMapper);
             _symbolPropertiesDatabase = SymbolPropertiesDatabase.FromDataFolder();
             _algorithm = algorithm;
 

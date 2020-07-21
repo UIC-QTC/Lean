@@ -54,8 +54,6 @@ namespace QuantConnect.Tests.Brokerages.Bitfinex
             priceProvider.Setup(a => a.GetLastPrice(It.IsAny<Symbol>())).Returns(1.234m);
 
             return new BitfinexBrokerage(
-                    Config.Get("bitfinex-url", "wss://api.bitfinex.com/ws/2"),
-                    Config.Get("bitfinex-rest", "https://api.bitfinex.com"),
                     Config.Get("bitfinex-api-key"),
                     Config.Get("bitfinex-api-secret"),
                     algorithm.Object,

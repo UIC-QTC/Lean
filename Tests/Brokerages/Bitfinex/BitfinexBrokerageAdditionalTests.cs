@@ -40,7 +40,6 @@ namespace QuantConnect.Tests.Brokerages.Bitfinex
             priceProvider.Setup(x => x.GetLastPrice(It.IsAny<Symbol>())).Returns(1.234m);
 
             _brokerage = new BitfinexBrokerage(
-                "wss://localhost",
                 _webSocket.Object,
                 _restClient.Object,
                 "apikey",
