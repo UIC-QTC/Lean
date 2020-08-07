@@ -166,118 +166,6 @@ namespace QuantConnect.Tests.Common.Orders.Fills
 
         #region OldBaseFillModelTests
 
-        [Test]
-        public void OldBaseFillModel_DoesNotOverride_MarketFill()
-        {
-            var model = new TestFillModelInheritBaseClassDoesNotOverride();
-            var result = model.Fill(
-                new FillModelParameters(_security,
-                    new MarketOrder(_security.Symbol, 1, orderDateTime),
-                    new MockSubscriptionDataConfigProvider(_config),
-                    Time.OneHour));
-
-            Assert.IsNotNull(result);
-            Assert.True(model.GetPricesWasCalled);
-            Assert.AreEqual(12345, result.OrderEvent.FillPrice);
-        }
-
-        [Test]
-        public void OldBaseFillModel_MarketFill()
-        {
-            var model = new TestFillModelInheritBaseClass();
-            var result = model.Fill(
-                new FillModelParameters(_security,
-                    new MarketOrder(_security.Symbol, 1, orderDateTime),
-                    new MockSubscriptionDataConfigProvider(_config),
-                    Time.OneHour));
-
-            Assert.True(model.MarketFillWasCalled);
-            Assert.IsNotNull(result);
-            Assert.True(model.GetPricesWasCalled);
-            Assert.AreEqual(12345, result.OrderEvent.FillPrice);
-        }
-
-        [Test]
-        public void OldBaseFillModel_StopMarketFill()
-        {
-            var model = new TestFillModelInheritBaseClass();
-            var result = model.Fill(
-                new FillModelParameters(_security,
-                    new StopMarketOrder(_security.Symbol, 1, 1, orderDateTime),
-                    new MockSubscriptionDataConfigProvider(_config),
-                    Time.OneHour));
-
-            Assert.True(model.StopMarketFillWasCalled);
-            Assert.IsNotNull(result);
-            Assert.True(model.GetPricesWasCalled);
-            Assert.AreEqual(12345, result.OrderEvent.FillPrice);
-        }
-
-        [Test]
-        public void OldBaseFillModel_StopLimitFill()
-        {
-            var model = new TestFillModelInheritBaseClass();
-            var result = model.Fill(
-                new FillModelParameters(_security,
-                    new StopLimitOrder(_security.Symbol, 1, 12344, 12346, orderDateTime),
-                    new MockSubscriptionDataConfigProvider(_config),
-                    Time.OneHour));
-
-            Assert.True(model.StopLimitFillWasCalled);
-            Assert.IsNotNull(result);
-            Assert.True(model.GetPricesWasCalled);
-            Assert.AreEqual(12345, result.OrderEvent.FillPrice);
-        }
-
-        [Test]
-        public void OldBaseFillModel_LimitFill()
-        {
-            var model = new TestFillModelInheritBaseClass();
-            var result = model.Fill(
-                new FillModelParameters(_security,
-                    new LimitOrder(_security.Symbol, 1, 12346, orderDateTime),
-                    new MockSubscriptionDataConfigProvider(_config),
-                    Time.OneHour));
-
-            Assert.True(model.LimitFillWasCalled);
-            Assert.IsNotNull(result);
-            Assert.True(model.GetPricesWasCalled);
-            Assert.AreEqual(12345, result.OrderEvent.FillPrice);
-        }
-
-        [Test]
-        public void OldBaseFillModel_MarketOnOpenFill()
-        {
-            var model = new TestFillModelInheritBaseClass();
-            _security.SetMarketPrice(new Tick(orderDateTime, _security.Symbol, 88, 88) {TickType = TickType.Trade});
-
-            var result = model.Fill(
-                new FillModelParameters(_security,
-                    new MarketOnOpenOrder(_security.Symbol, 1, orderDateTime),
-                    new MockSubscriptionDataConfigProvider(_config),
-                    Time.OneHour));
-
-            Assert.True(model.MarketOnOpenFillWasCalled);
-            Assert.IsNotNull(result);
-            Assert.True(model.GetPricesWasCalled);
-            Assert.AreEqual(12345, result.OrderEvent.FillPrice);
-        }
-
-        [Test]
-        public void OldBaseFillModel_MarketOnCloseFill()
-        {
-            var model = new TestFillModelInheritBaseClass();
-            var result = model.Fill(
-                new FillModelParameters(_security,
-                    new MarketOnCloseOrder(_security.Symbol, 1, orderDateTime),
-                    new MockSubscriptionDataConfigProvider(_config),
-                    Time.OneHour));
-
-            Assert.True(model.MarketOnCloseFillWasCalled);
-            Assert.IsNotNull(result);
-            Assert.True(model.GetPricesWasCalled);
-            Assert.AreEqual(12345, result.OrderEvent.FillPrice);
-        }
 
         #endregion
 
@@ -604,7 +492,6 @@ class CustomFillModel(ImmediateFillModel):
             public bool LimitFillWasCalled;
             public bool MarketOnOpenFillWasCalled;
             public bool MarketOnCloseFillWasCalled;
-            public bool GetPricesWasCalled;
 
             public override OrderEvent MarketFill(Security asset, MarketOrder order)
             {
@@ -640,35 +527,6 @@ class CustomFillModel(ImmediateFillModel):
             {
                 MarketOnCloseFillWasCalled = true;
                 return base.MarketOnCloseFill(asset, order);
-            }
-
-            protected override Prices GetPrices(Security asset, OrderDirection direction)
-            {
-                GetPricesWasCalled = true;
-                return new Prices(orderDateTime, 12345, 12345, 12345, 12345, 12345);
-            }
-
-            protected override Prices GetPricesForMarketFill(Security asset, OrderDirection direction)
-            {
-                return GetPrices(asset, direction);
-            }
-        }
-
-        private class TestFillModelInheritBaseClassDoesNotOverride : FillModel
-        {
-            public bool GetPricesWasCalled;
-
-            protected override Prices GetPrices(Security asset, OrderDirection direction)
-            {
-                GetPricesWasCalled = true;
-                // call base.GetPrices() just to test it show its possible
-                base.GetPrices(asset, direction);
-                return new Prices(orderDateTime, 12345, 12345, 12345, 12345, 12345);
-            }
-
-            protected override Prices GetPricesForMarketFill(Security asset, OrderDirection direction)
-            {
-                return GetPrices(asset, direction);
             }
         }
 

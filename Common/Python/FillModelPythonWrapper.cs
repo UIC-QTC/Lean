@@ -28,7 +28,7 @@ namespace QuantConnect.Python
         private readonly dynamic _model;
 
         /// <summary>
-        /// Constructor for initialising the <see cref="FillModelPythonWrapper"/> class with wrapped <see cref="PyObject"/> object
+        /// Constructor for initializing the <see cref="FillModelPythonWrapper"/> class with wrapped <see cref="PyObject"/> object
         /// </summary>
         /// <param name="model">Represents a model that simulates order fill events</param>
         public FillModelPythonWrapper(PyObject model)
@@ -135,32 +135,6 @@ namespace QuantConnect.Python
             using (Py.GIL())
             {
                 return (_model.StopMarketFill(asset, order) as PyObject).GetAndDispose<OrderEvent>();
-            }
-        }
-
-        /// <summary>
-        /// Get the minimum and maximum price for this security in the last bar:
-        /// </summary>
-        /// <param name="asset">Security asset we're checking</param>
-        /// <param name="direction">The order direction, decides whether to pick bid or ask</param>
-        protected override Prices GetPrices(Security asset, OrderDirection direction)
-        {
-            using (Py.GIL())
-            {
-                return (_model.GetPrices(asset, direction) as PyObject).GetAndDispose<Prices>();
-            }
-        }
-
-        /// <summary>
-        /// Get the minimum and maximum price for this security in the last bar for market fill orders
-        /// </summary>
-        /// <param name="asset">Security asset we're checking</param>
-        /// <param name="direction">The order direction, decides whether to pick bid or ask</param>
-        protected override Prices GetPricesForMarketFill(Security asset, OrderDirection direction)
-        {
-            using (Py.GIL())
-            {
-                return (_model.GetPricesForMarketFill(asset, direction) as PyObject).GetAndDispose<Prices>();
             }
         }
     }
