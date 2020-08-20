@@ -10,7 +10,6 @@ import QuantConnect
 import QuantConnect.Data
 import QuantConnect.Securities
 import QuantConnect.Securities.Crypto
-import System
 import System.Collections.Concurrent
 import typing
 
@@ -25,7 +24,7 @@ class Crypto(QuantConnect.Securities.Security, QuantConnect.Interfaces.ISecurity
     Crypto(symbol: Symbol, exchangeHours: SecurityExchangeHours, quoteCurrency: Cash, symbolProperties: SymbolProperties, currencyConverter: ICurrencyConverter, registeredTypes: IRegisteredSecurityDataTypesProvider, securityCache: SecurityCache)
     """
     @staticmethod
-    def DecomposeCurrencyPair(symbol: QuantConnect.Symbol, symbolProperties: QuantConnect.Securities.SymbolProperties, baseCurrency: System.String, quoteCurrency: System.String) -> None:
+    def DecomposeCurrencyPair(symbol: QuantConnect.Symbol, symbolProperties: QuantConnect.Securities.SymbolProperties, baseCurrency: str, quoteCurrency: str) -> None:
         pass
 
     @staticmethod # known case of __new__

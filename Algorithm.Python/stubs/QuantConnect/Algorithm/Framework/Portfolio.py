@@ -1,52 +1,28 @@
-# encoding: utf-8
-# module QuantConnect.Algorithm.Framework.Portfolio calls itself Portfolio
-# from QuantConnect.Algorithm, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null, QuantConnect.Common, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null
-# by generator 1.145
-# no doc
-
-# imports
-import datetime
-import Python.Runtime
-import QuantConnect
-import QuantConnect.Algorithm
-import QuantConnect.Algorithm.Framework.Alphas
-import QuantConnect.Algorithm.Framework.Portfolio
-import QuantConnect.Data.UniverseSelection
-import QuantConnect.Interfaces
-import System.Collections.Generic
+from .__Portfolio_1 import *
 import typing
+import System.Collections.Generic
+import System
+import QuantConnect.Scheduling
+import QuantConnect.Interfaces
+import QuantConnect.Data.UniverseSelection
+import QuantConnect.Algorithm.Framework.Portfolio
+import QuantConnect.Algorithm.Framework.Alphas
+import QuantConnect.Algorithm
+import QuantConnect
+import Python.Runtime
+import datetime
 
 # no functions
 # classes
 
-class IPortfolioConstructionModel(QuantConnect.Algorithm.Framework.INotifiedSecurityChanges):
-    """ Algorithm framework model that """
-    def CreateTargets(self, algorithm: QuantConnect.Algorithm.QCAlgorithm, insights: typing.List[QuantConnect.Algorithm.Framework.Alphas.Insight]) -> typing.List[QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget]:
-        pass
-
-
-class IPortfolioOptimizer:
-    """ Interface for portfolio optimization algorithms """
-    def Optimize(self, historicalReturns: typing.List[typing.List[float]], expectedReturns: typing.List[float], covariance: typing.List[typing.List[float]]) -> typing.List[float]:
-        pass
-
-
-class IPortfolioTarget:
-    """
-    Represents a portfolio target. This may be a percentage of total portfolio value
-                or it may be a fixed number of shares.
-    """
-    Quantity: float
-
-    Symbol: QuantConnect.Symbol
-
-
-
 class PortfolioConstructionModel(System.object, QuantConnect.Algorithm.Framework.Portfolio.IPortfolioConstructionModel, QuantConnect.Algorithm.Framework.INotifiedSecurityChanges):
     """
-    Provides a base class for portfolio construction models
-    
-    PortfolioConstructionModel(rebalancingFunc: Func[DateTime, Nullable[DateTime]])
+    Provides a base class for portfolio construction models
+
+    
+
+    PortfolioConstructionModel(rebalancingFunc: Func[DateTime, Nullable[DateTime]])
+
     PortfolioConstructionModel(rebalancingFunc: Func[DateTime, DateTime])
     """
     def CreateTargets(self, algorithm: QuantConnect.Algorithm.QCAlgorithm, insights: typing.List[QuantConnect.Algorithm.Framework.Alphas.Insight]) -> typing.List[QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget]:
@@ -74,182 +50,135 @@ class PortfolioConstructionModel(System.object, QuantConnect.Algorithm.Framework
     PythonWrapper: QuantConnect.Algorithm.Framework.Portfolio.PortfolioConstructionModelPythonWrapper
 
 
-class NullPortfolioConstructionModel(QuantConnect.Algorithm.Framework.Portfolio.PortfolioConstructionModel, QuantConnect.Algorithm.Framework.Portfolio.IPortfolioConstructionModel, QuantConnect.Algorithm.Framework.INotifiedSecurityChanges):
+class AccumulativeInsightPortfolioConstructionModel(QuantConnect.Algorithm.Framework.Portfolio.PortfolioConstructionModel, QuantConnect.Algorithm.Framework.Portfolio.IPortfolioConstructionModel, QuantConnect.Algorithm.Framework.INotifiedSecurityChanges):
     """
-    Provides an implementation of QuantConnect.Algorithm.Framework.Portfolio.IPortfolioConstructionModel that does nothing
-    
-    NullPortfolioConstructionModel()
+    Provides an implementation of QuantConnect.Algorithm.Framework.Portfolio.IPortfolioConstructionModel that allocates percent of account
+
+                to each insight, defaulting to 3%.
+
+                For insights of direction QuantConnect.Algorithm.Framework.Alphas.InsightDirection.Up, long targets are returned and
+
+                for insights of direction QuantConnect.Algorithm.Framework.Alphas.InsightDirection.Down, short targets are returned.
+
+                By default, no rebalancing shall be done.
+
+                Rules:
+
+                   1. On active Up insight, increase position size by percent
+
+                   2. On active Down insight, decrease position size by percent
+
+                   3. On active Flat insight, move by percent towards 0
+
+                   4. On expired insight, and no other active insight, emits a 0 target'''
+
+    
+
+    AccumulativeInsightPortfolioConstructionModel(rebalancingDateRules: IDateRule, portfolioBias: PortfolioBias, percent: float)
+
+    AccumulativeInsightPortfolioConstructionModel(rebalancingFunc: Func[DateTime, Nullable[DateTime]], portfolioBias: PortfolioBias, percent: float)
+
+    AccumulativeInsightPortfolioConstructionModel(rebalancingFunc: Func[DateTime, DateTime], portfolioBias: PortfolioBias, percent: float)
+
+    AccumulativeInsightPortfolioConstructionModel(rebalance: PyObject, portfolioBias: PortfolioBias, percent: float)
+
+    AccumulativeInsightPortfolioConstructionModel(timeSpan: TimeSpan, portfolioBias: PortfolioBias, percent: float)
+
+    AccumulativeInsightPortfolioConstructionModel(resolution: Resolution, portfolioBias: PortfolioBias, percent: float)
     """
-    def CreateTargets(self, algorithm: QuantConnect.Algorithm.QCAlgorithm, insights: typing.List[QuantConnect.Algorithm.Framework.Alphas.Insight]) -> typing.List[QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget]:
+    @staticmethod # known case of __new__
+    @typing.overload
+    def __new__(self, rebalancingDateRules: QuantConnect.Scheduling.IDateRule, portfolioBias: QuantConnect.Algorithm.Framework.Portfolio.PortfolioBias, percent: float) -> None:
+        pass
+
+    @typing.overload
+    def __new__(self, rebalancingFunc: typing.Callable[[datetime.datetime], typing.Optional[datetime.datetime]], portfolioBias: QuantConnect.Algorithm.Framework.Portfolio.PortfolioBias, percent: float) -> None:
+        pass
+
+    @typing.overload
+    def __new__(self, rebalancingFunc: typing.Callable[[datetime.datetime], datetime.datetime], portfolioBias: QuantConnect.Algorithm.Framework.Portfolio.PortfolioBias, percent: float) -> None:
+        pass
+
+    @typing.overload
+    def __new__(self, rebalance: Python.Runtime.PyObject, portfolioBias: QuantConnect.Algorithm.Framework.Portfolio.PortfolioBias, percent: float) -> None:
+        pass
+
+    @typing.overload
+    def __new__(self, timeSpan: datetime.timedelta, portfolioBias: QuantConnect.Algorithm.Framework.Portfolio.PortfolioBias, percent: float) -> None:
+        pass
+
+    @typing.overload
+    def __new__(self, resolution: QuantConnect.Resolution, portfolioBias: QuantConnect.Algorithm.Framework.Portfolio.PortfolioBias, percent: float) -> None:
+        pass
+
+    def __new__(self, *args) -> None:
         pass
 
     PythonWrapper: QuantConnect.Algorithm.Framework.Portfolio.PortfolioConstructionModelPythonWrapper
 
 
-class PortfolioBias(System.Enum, System.IComparable, System.IFormattable, System.IConvertible):
+class BlackLittermanOptimizationPortfolioConstructionModel(QuantConnect.Algorithm.Framework.Portfolio.PortfolioConstructionModel, QuantConnect.Algorithm.Framework.Portfolio.IPortfolioConstructionModel, QuantConnect.Algorithm.Framework.INotifiedSecurityChanges):
     """
-    Specifies the bias of the portfolio (Short, Long/Short, Long)
-    
-    enum PortfolioBias, values: Long (1), LongShort (0), Short (-1)
-    """
-    value__: int
-    Long: PortfolioBias
-    LongShort: PortfolioBias
-    Short: PortfolioBias
+    Provides an implementation of Black-Litterman portfolio optimization. The model adjusts equilibrium market
 
+                returns by incorporating views from multiple alpha models and therefore to get the optimal risky portfolio
 
-class PortfolioConstructionModelPythonWrapper(QuantConnect.Algorithm.Framework.Portfolio.PortfolioConstructionModel, QuantConnect.Algorithm.Framework.Portfolio.IPortfolioConstructionModel, QuantConnect.Algorithm.Framework.INotifiedSecurityChanges):
+                reflecting those views. If insights of all alpha models have None magnitude or there are linearly dependent
+
+                vectors in link matrix of views, the expected return would be the implied excess equilibrium return.
+
+                The interval of weights in optimization method can be changed based on the long-short algorithm.
+
+                The default model uses the 0.0025 as weight-on-views scalar parameter tau. The optimization method
+
+                maximizes the Sharpe ratio with the weight range from -1 to 1.
+
+    
+
+    BlackLittermanOptimizationPortfolioConstructionModel(timeSpan: TimeSpan, portfolioBias: PortfolioBias, lookback: int, period: int, resolution: Resolution, riskFreeRate: float, delta: float, tau: float, optimizer: IPortfolioOptimizer)
+
+    BlackLittermanOptimizationPortfolioConstructionModel(rebalanceResolution: Resolution, portfolioBias: PortfolioBias, lookback: int, period: int, resolution: Resolution, riskFreeRate: float, delta: float, tau: float, optimizer: IPortfolioOptimizer)
+
+    BlackLittermanOptimizationPortfolioConstructionModel(rebalancingFunc: Func[DateTime, DateTime], portfolioBias: PortfolioBias, lookback: int, period: int, resolution: Resolution, riskFreeRate: float, delta: float, tau: float, optimizer: IPortfolioOptimizer)
+
+    BlackLittermanOptimizationPortfolioConstructionModel(rebalancingDateRules: IDateRule, portfolioBias: PortfolioBias, lookback: int, period: int, resolution: Resolution, riskFreeRate: float, delta: float, tau: float, optimizer: IPortfolioOptimizer)
+
+    BlackLittermanOptimizationPortfolioConstructionModel(rebalance: PyObject, portfolioBias: PortfolioBias, lookback: int, period: int, resolution: Resolution, riskFreeRate: float, delta: float, tau: float, optimizer: IPortfolioOptimizer)
+
+    BlackLittermanOptimizationPortfolioConstructionModel(rebalancingFunc: Func[DateTime, Nullable[DateTime]], portfolioBias: PortfolioBias, lookback: int, period: int, resolution: Resolution, riskFreeRate: float, delta: float, tau: float, optimizer: IPortfolioOptimizer)
     """
-    Provides an implementation of QuantConnect.Algorithm.Framework.Portfolio.IPortfolioConstructionModel that wraps a Python.Runtime.PyObject object
-    
-    PortfolioConstructionModelPythonWrapper(model: PyObject)
-    """
-    def CreateTargets(self, algorithm: QuantConnect.Algorithm.QCAlgorithm, insights: typing.List[QuantConnect.Algorithm.Framework.Alphas.Insight]) -> typing.List[QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget]:
+    def GetEquilibriumReturns(self, returns: typing.List[typing.List[float]], Σ: typing.List[typing.List[float]]) -> typing.List[float]:
         pass
 
     def OnSecuritiesChanged(self, algorithm: QuantConnect.Algorithm.QCAlgorithm, changes: QuantConnect.Data.UniverseSelection.SecurityChanges) -> None:
         pass
 
     @staticmethod # known case of __new__
-    def __new__(self, model: Python.Runtime.PyObject) -> None:
+    @typing.overload
+    def __new__(self, timeSpan: datetime.timedelta, portfolioBias: QuantConnect.Algorithm.Framework.Portfolio.PortfolioBias, lookback: int, period: int, resolution: QuantConnect.Resolution, riskFreeRate: float, delta: float, tau: float, optimizer: QuantConnect.Algorithm.Framework.Portfolio.IPortfolioOptimizer) -> None:
         pass
 
-    RebalanceOnInsightChanges: bool
+    @typing.overload
+    def __new__(self, rebalanceResolution: QuantConnect.Resolution, portfolioBias: QuantConnect.Algorithm.Framework.Portfolio.PortfolioBias, lookback: int, period: int, resolution: QuantConnect.Resolution, riskFreeRate: float, delta: float, tau: float, optimizer: QuantConnect.Algorithm.Framework.Portfolio.IPortfolioOptimizer) -> None:
+        pass
 
-    RebalanceOnSecurityChanges: bool
+    @typing.overload
+    def __new__(self, rebalancingFunc: typing.Callable[[datetime.datetime], datetime.datetime], portfolioBias: QuantConnect.Algorithm.Framework.Portfolio.PortfolioBias, lookback: int, period: int, resolution: QuantConnect.Resolution, riskFreeRate: float, delta: float, tau: float, optimizer: QuantConnect.Algorithm.Framework.Portfolio.IPortfolioOptimizer) -> None:
+        pass
+
+    @typing.overload
+    def __new__(self, rebalancingDateRules: QuantConnect.Scheduling.IDateRule, portfolioBias: QuantConnect.Algorithm.Framework.Portfolio.PortfolioBias, lookback: int, period: int, resolution: QuantConnect.Resolution, riskFreeRate: float, delta: float, tau: float, optimizer: QuantConnect.Algorithm.Framework.Portfolio.IPortfolioOptimizer) -> None:
+        pass
+
+    @typing.overload
+    def __new__(self, rebalance: Python.Runtime.PyObject, portfolioBias: QuantConnect.Algorithm.Framework.Portfolio.PortfolioBias, lookback: int, period: int, resolution: QuantConnect.Resolution, riskFreeRate: float, delta: float, tau: float, optimizer: QuantConnect.Algorithm.Framework.Portfolio.IPortfolioOptimizer) -> None:
+        pass
+
+    @typing.overload
+    def __new__(self, rebalancingFunc: typing.Callable[[datetime.datetime], typing.Optional[datetime.datetime]], portfolioBias: QuantConnect.Algorithm.Framework.Portfolio.PortfolioBias, lookback: int, period: int, resolution: QuantConnect.Resolution, riskFreeRate: float, delta: float, tau: float, optimizer: QuantConnect.Algorithm.Framework.Portfolio.IPortfolioOptimizer) -> None:
+        pass
+
+    def __new__(self, *args) -> None:
+        pass
 
     PythonWrapper: QuantConnect.Algorithm.Framework.Portfolio.PortfolioConstructionModelPythonWrapper
-
-
-class PortfolioTarget(System.object, QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget):
-    """
-    Provides an implementation of QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget that specifies a
-                specified quantity of a security to be held by the algorithm
-    
-    PortfolioTarget(symbol: Symbol, quantity: Decimal)
-    """
-    @staticmethod
-    @typing.overload
-    def Percent(algorithm: QuantConnect.Interfaces.IAlgorithm, symbol: QuantConnect.Symbol, percent: float) -> QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget:
-        pass
-
-    @staticmethod
-    @typing.overload
-    def Percent(algorithm: QuantConnect.Interfaces.IAlgorithm, symbol: QuantConnect.Symbol, percent: float, returnDeltaQuantity: bool) -> QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget:
-        pass
-
-    def Percent(self, *args) -> QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget:
-        pass
-
-    def ToString(self) -> str:
-        pass
-
-    @staticmethod # known case of __new__
-    def __new__(self, symbol: QuantConnect.Symbol, quantity: float) -> None:
-        pass
-
-    Quantity: float
-
-    Symbol: QuantConnect.Symbol
-
-
-
-class PortfolioTargetCollection(System.object, System.Collections.Generic.ICollection[IPortfolioTarget], System.Collections.Generic.IEnumerable[IPortfolioTarget], System.Collections.IEnumerable, System.Collections.Generic.IDictionary[Symbol, IPortfolioTarget], System.Collections.Generic.ICollection[KeyValuePair[Symbol, IPortfolioTarget]], System.Collections.Generic.IEnumerable[KeyValuePair[Symbol, IPortfolioTarget]]):
-    """
-    Provides a collection for managing QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTargets for each symbol
-    
-    PortfolioTargetCollection()
-    """
-    @typing.overload
-    def Add(self, target: QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget) -> None:
-        pass
-
-    @typing.overload
-    def Add(self, target: System.Collections.Generic.KeyValuePair[QuantConnect.Symbol, QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget]) -> None:
-        pass
-
-    @typing.overload
-    def Add(self, symbol: QuantConnect.Symbol, target: QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget) -> None:
-        pass
-
-    def Add(self, *args) -> None:
-        pass
-
-    @typing.overload
-    def AddRange(self, targets: typing.List[QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget]) -> None:
-        pass
-
-    @typing.overload
-    def AddRange(self, targets: typing.List[QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget]) -> None:
-        pass
-
-    def AddRange(self, *args) -> None:
-        pass
-
-    def Clear(self) -> None:
-        pass
-
-    def ClearFulfilled(self, algorithm: QuantConnect.Interfaces.IAlgorithm) -> None:
-        pass
-
-    @typing.overload
-    def Contains(self, target: QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget) -> bool:
-        pass
-
-    @typing.overload
-    def Contains(self, target: System.Collections.Generic.KeyValuePair[QuantConnect.Symbol, QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget]) -> bool:
-        pass
-
-    def Contains(self, *args) -> bool:
-        pass
-
-    def ContainsKey(self, symbol: QuantConnect.Symbol) -> bool:
-        pass
-
-    @typing.overload
-    def CopyTo(self, array: typing.List[QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget], arrayIndex: int) -> None:
-        pass
-
-    @typing.overload
-    def CopyTo(self, array: typing.List[System.Collections.Generic.KeyValuePair], arrayIndex: int) -> None:
-        pass
-
-    def CopyTo(self, *args) -> None:
-        pass
-
-    def GetEnumerator(self) -> System.Collections.Generic.IEnumerator[QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget]:
-        pass
-
-    def OrderByMarginImpact(self, algorithm: QuantConnect.Interfaces.IAlgorithm) -> typing.List[QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget]:
-        pass
-
-    @typing.overload
-    def Remove(self, symbol: QuantConnect.Symbol) -> bool:
-        pass
-
-    @typing.overload
-    def Remove(self, target: System.Collections.Generic.KeyValuePair[QuantConnect.Symbol, QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget]) -> bool:
-        pass
-
-    @typing.overload
-    def Remove(self, target: QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget) -> bool:
-        pass
-
-    def Remove(self, *args) -> bool:
-        pass
-
-    def TryGetValue(self, symbol: QuantConnect.Symbol, target: QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget) -> bool:
-        pass
-
-    Count: int
-
-    IsReadOnly: bool
-
-    Keys: typing.List[QuantConnect.Symbol]
-
-    Values: typing.List[QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget]
-
-
-    Item: indexer#
-
-

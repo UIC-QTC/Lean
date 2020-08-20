@@ -1,18 +1,11 @@
-# encoding: utf-8
-# module QuantConnect.Algorithm.Framework.Alphas.Analysis calls itself Analysis
-# from QuantConnect.Common, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null
-# by generator 1.145
-# no doc
-
-# imports
-import datetime
-import QuantConnect
-import QuantConnect.Algorithm.Framework.Alphas
-import QuantConnect.Algorithm.Framework.Alphas.Analysis
-import QuantConnect.Securities
-import System
-import System.Collections.Generic
 import typing
+import System.Collections.Generic
+import System
+import QuantConnect.Securities
+import QuantConnect.Algorithm.Framework.Alphas.Analysis
+import QuantConnect.Algorithm.Framework.Alphas
+import QuantConnect
+import datetime
 
 # no functions
 # classes
@@ -41,8 +34,10 @@ class IInsightManager(System.IDisposable):
 
 class IInsightScoreFunction:
     """
-    Defines a function used to determine how correct a particular insight is.
-                The result of calling QuantConnect.Algorithm.Framework.Alphas.Analysis.IInsightScoreFunction.Evaluate(QuantConnect.Algorithm.Framework.Alphas.Analysis.InsightAnalysisContext,QuantConnect.Algorithm.Framework.Alphas.InsightScoreType) is expected to be within the range [0, 1]
+    Defines a function used to determine how correct a particular insight is.
+
+                The result of calling QuantConnect.Algorithm.Framework.Alphas.Analysis.IInsightScoreFunction.Evaluate(QuantConnect.Algorithm.Framework.Alphas.Analysis.InsightAnalysisContext,QuantConnect.Algorithm.Framework.Alphas.InsightScoreType) is expected to be within the range [0, 1]
+
                 where 0 is completely wrong and 1 is completely right
     """
     def Evaluate(self, context: QuantConnect.Algorithm.Framework.Alphas.Analysis.InsightAnalysisContext, scoreType: QuantConnect.Algorithm.Framework.Alphas.InsightScoreType) -> float:
@@ -57,8 +52,10 @@ class IInsightScoreFunctionProvider:
 
 class InsightAnalysisContext(System.object):
     """
-    Defines a context for performing analysis on a single insight
-    
+    Defines a context for performing analysis on a single insight
+
+    
+
     InsightAnalysisContext(insight: Insight, initialValues: SecurityValues, analysisPeriod: TimeSpan)
     """
     def Equals(self, obj: object) -> bool:
@@ -107,8 +104,10 @@ class InsightAnalysisContext(System.object):
 
 class InsightManager(System.object, QuantConnect.Algorithm.Framework.Alphas.Analysis.IInsightManager, System.IDisposable):
     """
-    Encapsulates the storage and on-line scoring of insights.
-    
+    Encapsulates the storage and on-line scoring of insights.
+
+    
+
     InsightManager(scoreFunctionProvider: IInsightScoreFunctionProvider, extraAnalysisPeriodRatio: float, *extensions: Array[IInsightManagerExtension])
     """
     def AddExtension(self, extension: QuantConnect.Algorithm.Framework.Alphas.IInsightManagerExtension) -> None:
@@ -148,7 +147,8 @@ class InsightManager(System.object, QuantConnect.Algorithm.Framework.Alphas.Anal
 
 class ISecurityValuesProvider:
     """
-    Provides a simple abstraction that returns a security's current price and volatility.
+    Provides a simple abstraction that returns a security's current price and volatility.
+
                 This facilitates testing by removing the dependency of IAlgorithm on the analysis components
     """
     def GetAllValues(self) -> QuantConnect.Algorithm.Framework.Alphas.Analysis.ReadOnlySecurityValuesCollection:
@@ -160,12 +160,18 @@ class ISecurityValuesProvider:
 
 class ReadOnlySecurityValuesCollection(System.object):
     """
-    Defines the security values at a given instant. This is analagous
-                to TimeSlice/Slice, but decoupled from the algorithm thread and is
-                intended to contain all of the information necessary to score all
-                insight at this particular time step
-    
-    ReadOnlySecurityValuesCollection(securityValuesBySymbol: Dictionary[Symbol, SecurityValues])
+    Defines the security values at a given instant. This is analagous
+
+                to TimeSlice/Slice, but decoupled from the algorithm thread and is
+
+                intended to contain all of the information necessary to score all
+
+                insight at this particular time step
+
+    
+
+    ReadOnlySecurityValuesCollection(securityValuesBySymbol: Dictionary[Symbol, SecurityValues])
+
     ReadOnlySecurityValuesCollection(securityValuesBySymbolFunc: Func[Symbol, SecurityValues])
     """
     @staticmethod # known case of __new__
@@ -185,8 +191,10 @@ class ReadOnlySecurityValuesCollection(System.object):
 
 class SecurityValues(System.object):
     """
-    Contains security values required by insight analysis components
-    
+    Contains security values required by insight analysis components
+
+    
+
     SecurityValues(symbol: Symbol, timeUtc: DateTime, exchangeHours: SecurityExchangeHours, price: Decimal, volatility: Decimal, volume: Decimal, quoteCurrencyConversionRate: Decimal)
     """
     def Get(self, type: QuantConnect.Algorithm.Framework.Alphas.InsightType) -> float:
@@ -219,7 +227,3 @@ class SecurityValuesProviderExtensions(System.object):
         pass
 
     __all__: list
-
-
-# variables with complex values
-

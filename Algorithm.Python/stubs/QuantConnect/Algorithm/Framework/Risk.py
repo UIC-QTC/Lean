@@ -1,25 +1,20 @@
-# encoding: utf-8
-# module QuantConnect.Algorithm.Framework.Risk calls itself Risk
-# from QuantConnect.Algorithm, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null
-# by generator 1.145
-# no doc
-
-# imports
-import datetime
-import Python.Runtime
-import QuantConnect.Algorithm
-import QuantConnect.Algorithm.Framework.Portfolio
-import QuantConnect.Algorithm.Framework.Risk
-import QuantConnect.Data.UniverseSelection
 import typing
+import QuantConnect.Data.UniverseSelection
+import QuantConnect.Algorithm.Framework.Risk
+import QuantConnect.Algorithm.Framework.Portfolio
+import QuantConnect.Algorithm
+import Python.Runtime
+import datetime
 
 # no functions
 # classes
 
 class RiskManagementModel(System.object, QuantConnect.Algorithm.Framework.Risk.IRiskManagementModel, QuantConnect.Algorithm.Framework.INotifiedSecurityChanges):
     """
-    Provides a base class for risk management models
-    
+    Provides a base class for risk management models
+
+    
+
     RiskManagementModel()
     """
     def ManageRisk(self, algorithm: QuantConnect.Algorithm.QCAlgorithm, targets: typing.List[QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget]) -> typing.List[QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget]:
@@ -31,12 +26,18 @@ class RiskManagementModel(System.object, QuantConnect.Algorithm.Framework.Risk.I
 
 class CompositeRiskManagementModel(QuantConnect.Algorithm.Framework.Risk.RiskManagementModel, QuantConnect.Algorithm.Framework.Risk.IRiskManagementModel, QuantConnect.Algorithm.Framework.INotifiedSecurityChanges):
     """
-    Provides an implementation of QuantConnect.Algorithm.Framework.Risk.IRiskManagementModel that combines multiple risk
-                models into a single risk management model and properly sets each insights 'SourceModel' property.
-    
-    CompositeRiskManagementModel(*riskManagementModels: Array[IRiskManagementModel])
-    CompositeRiskManagementModel(riskManagementModels: IEnumerable[IRiskManagementModel])
-    CompositeRiskManagementModel(*riskManagementModels: Array[PyObject])
+    Provides an implementation of QuantConnect.Algorithm.Framework.Risk.IRiskManagementModel that combines multiple risk
+
+                models into a single risk management model and properly sets each insights 'SourceModel' property.
+
+    
+
+    CompositeRiskManagementModel(*riskManagementModels: Array[IRiskManagementModel])
+
+    CompositeRiskManagementModel(riskManagementModels: IEnumerable[IRiskManagementModel])
+
+    CompositeRiskManagementModel(*riskManagementModels: Array[PyObject])
+
     CompositeRiskManagementModel(riskManagementModel: PyObject)
     """
     @typing.overload
@@ -83,10 +84,87 @@ class IRiskManagementModel(QuantConnect.Algorithm.Framework.INotifiedSecurityCha
         pass
 
 
+class MaximumDrawdownPercentPerSecurity(QuantConnect.Algorithm.Framework.Risk.RiskManagementModel, QuantConnect.Algorithm.Framework.Risk.IRiskManagementModel, QuantConnect.Algorithm.Framework.INotifiedSecurityChanges):
+    """
+    Provides an implementation of QuantConnect.Algorithm.Framework.Risk.IRiskManagementModel that limits the drawdown
+
+                per holding to the specified percentage
+
+    
+
+    MaximumDrawdownPercentPerSecurity(maximumDrawdownPercent: Decimal)
+    """
+    def ManageRisk(self, algorithm: QuantConnect.Algorithm.QCAlgorithm, targets: typing.List[QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget]) -> typing.List[QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget]:
+        pass
+
+    @staticmethod # known case of __new__
+    def __new__(self, maximumDrawdownPercent: float) -> None:
+        pass
+
+
+class MaximumDrawdownPercentPortfolio(QuantConnect.Algorithm.Framework.Risk.RiskManagementModel, QuantConnect.Algorithm.Framework.Risk.IRiskManagementModel, QuantConnect.Algorithm.Framework.INotifiedSecurityChanges):
+    """
+    Provides an implementation of QuantConnect.Algorithm.Framework.Risk.IRiskManagementModel that limits the drawdown of the portfolio
+
+                to the specified percentage. Once this is triggered the algorithm will need to be manually restarted.
+
+    
+
+    MaximumDrawdownPercentPortfolio(maximumDrawdownPercent: Decimal, isTrailing: bool)
+    """
+    def ManageRisk(self, algorithm: QuantConnect.Algorithm.QCAlgorithm, targets: typing.List[QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget]) -> typing.List[QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget]:
+        pass
+
+    @staticmethod # known case of __new__
+    def __new__(self, maximumDrawdownPercent: float, isTrailing: bool) -> None:
+        pass
+
+
+class MaximumSectorExposureRiskManagementModel(QuantConnect.Algorithm.Framework.Risk.RiskManagementModel, QuantConnect.Algorithm.Framework.Risk.IRiskManagementModel, QuantConnect.Algorithm.Framework.INotifiedSecurityChanges):
+    """
+    Provides an implementation of QuantConnect.Algorithm.Framework.Risk.IRiskManagementModel that limits
+
+                the sector exposure to the specified percentage
+
+    
+
+    MaximumSectorExposureRiskManagementModel(maximumSectorExposure: Decimal)
+    """
+    def ManageRisk(self, algorithm: QuantConnect.Algorithm.QCAlgorithm, targets: typing.List[QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget]) -> typing.List[QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget]:
+        pass
+
+    def OnSecuritiesChanged(self, algorithm: QuantConnect.Algorithm.QCAlgorithm, changes: QuantConnect.Data.UniverseSelection.SecurityChanges) -> None:
+        pass
+
+    @staticmethod # known case of __new__
+    def __new__(self, maximumSectorExposure: float) -> None:
+        pass
+
+
+class MaximumUnrealizedProfitPercentPerSecurity(QuantConnect.Algorithm.Framework.Risk.RiskManagementModel, QuantConnect.Algorithm.Framework.Risk.IRiskManagementModel, QuantConnect.Algorithm.Framework.INotifiedSecurityChanges):
+    """
+    Provides an implementation of QuantConnect.Algorithm.Framework.Risk.IRiskManagementModel that limits the unrealized profit
+
+                per holding to the specified percentage
+
+    
+
+    MaximumUnrealizedProfitPercentPerSecurity(maximumUnrealizedProfitPercent: Decimal)
+    """
+    def ManageRisk(self, algorithm: QuantConnect.Algorithm.QCAlgorithm, targets: typing.List[QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget]) -> typing.List[QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget]:
+        pass
+
+    @staticmethod # known case of __new__
+    def __new__(self, maximumUnrealizedProfitPercent: float) -> None:
+        pass
+
+
 class NullRiskManagementModel(QuantConnect.Algorithm.Framework.Risk.RiskManagementModel, QuantConnect.Algorithm.Framework.Risk.IRiskManagementModel, QuantConnect.Algorithm.Framework.INotifiedSecurityChanges):
     """
-    Provides an implementation of QuantConnect.Algorithm.Framework.Risk.IRiskManagementModel that does nothing
-    
+    Provides an implementation of QuantConnect.Algorithm.Framework.Risk.IRiskManagementModel that does nothing
+
+    
+
     NullRiskManagementModel()
     """
     def ManageRisk(self, algorithm: QuantConnect.Algorithm.QCAlgorithm, targets: typing.List[QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget]) -> typing.List[QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget]:
@@ -95,8 +173,10 @@ class NullRiskManagementModel(QuantConnect.Algorithm.Framework.Risk.RiskManageme
 
 class RiskManagementModelPythonWrapper(QuantConnect.Algorithm.Framework.Risk.RiskManagementModel, QuantConnect.Algorithm.Framework.Risk.IRiskManagementModel, QuantConnect.Algorithm.Framework.INotifiedSecurityChanges):
     """
-    Provides an implementation of QuantConnect.Algorithm.Framework.Risk.IRiskManagementModel that wraps a Python.Runtime.PyObject object
-    
+    Provides an implementation of QuantConnect.Algorithm.Framework.Risk.IRiskManagementModel that wraps a Python.Runtime.PyObject object
+
+    
+
     RiskManagementModelPythonWrapper(model: PyObject)
     """
     def ManageRisk(self, algorithm: QuantConnect.Algorithm.QCAlgorithm, targets: typing.List[QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget]) -> typing.List[QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget]:
@@ -110,3 +190,19 @@ class RiskManagementModelPythonWrapper(QuantConnect.Algorithm.Framework.Risk.Ris
         pass
 
 
+class TrailingStopRiskManagementModel(QuantConnect.Algorithm.Framework.Risk.RiskManagementModel, QuantConnect.Algorithm.Framework.Risk.IRiskManagementModel, QuantConnect.Algorithm.Framework.INotifiedSecurityChanges):
+    """
+    Provides an implementation of QuantConnect.Algorithm.Framework.Risk.IRiskManagementModel that limits the maximum possible loss
+
+                measured from the highest unrealized profit
+
+    
+
+    TrailingStopRiskManagementModel(maximumDrawdownPercent: Decimal)
+    """
+    def ManageRisk(self, algorithm: QuantConnect.Algorithm.QCAlgorithm, targets: typing.List[QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget]) -> typing.List[QuantConnect.Algorithm.Framework.Portfolio.IPortfolioTarget]:
+        pass
+
+    @staticmethod # known case of __new__
+    def __new__(self, maximumDrawdownPercent: float) -> None:
+        pass

@@ -1,29 +1,25 @@
-# encoding: utf-8
-# module QuantConnect.Data.Auxiliary calls itself Auxiliary
-# from QuantConnect.Common, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null
-# by generator 1.145
-# no doc
-
-# imports
-import datetime
-import QuantConnect
-import QuantConnect.Data
-import QuantConnect.Data.Auxiliary
-import QuantConnect.Data.Market
-import QuantConnect.Interfaces
-import QuantConnect.Securities
-import System
-import System.Collections.Generic
-import System.IO
+from .__Auxiliary_1 import *
 import typing
+import System.IO
+import System.Collections.Generic
+import System
+import QuantConnect.Securities
+import QuantConnect.Interfaces
+import QuantConnect.Data.Market
+import QuantConnect.Data.Auxiliary
+import QuantConnect.Data
+import QuantConnect
+import datetime
 
 # no functions
 # classes
 
 class FactorFile(System.object, System.Collections.Generic.IEnumerable[FactorFileRow], System.Collections.IEnumerable):
     """
-    Represents an entire factor file for a specified symbol
-    
+    Represents an entire factor file for a specified symbol
+
+    
+
     FactorFile(permtick: str, data: IEnumerable[FactorFileRow], factorFileMinimumDate: Nullable[DateTime])
     """
     def Apply(self, data: typing.List[QuantConnect.Data.BaseData], exchangeHours: QuantConnect.Securities.SecurityExchangeHours) -> QuantConnect.Data.Auxiliary.FactorFile:
@@ -44,14 +40,14 @@ class FactorFile(System.object, System.Collections.Generic.IEnumerable[FactorFil
     def GetSplitsAndDividends(self, symbol: QuantConnect.Symbol, exchangeHours: QuantConnect.Securities.SecurityExchangeHours) -> typing.List[QuantConnect.Data.BaseData]:
         pass
 
-    def HasDividendEventOnNextTradingDay(self, date: datetime.datetime, priceFactorRatio: System.Decimal) -> bool:
+    def HasDividendEventOnNextTradingDay(self, date: datetime.datetime, priceFactorRatio: float) -> bool:
         pass
 
     @staticmethod
     def HasScalingFactors(permtick: str, market: str) -> bool:
         pass
 
-    def HasSplitEventOnNextTradingDay(self, date: datetime.datetime, splitFactor: System.Decimal) -> bool:
+    def HasSplitEventOnNextTradingDay(self, date: datetime.datetime, splitFactor: float) -> bool:
         pass
 
     @staticmethod
@@ -84,8 +80,10 @@ class FactorFile(System.object, System.Collections.Generic.IEnumerable[FactorFil
 
 class FactorFileRow(System.object):
     """
-    Defines a single row in a factor_factor file. This is a csv file ordered as {date, price factor, split factor, reference price}
-    
+    Defines a single row in a factor_factor file. This is a csv file ordered as {date, price factor, split factor, reference price}
+
+    
+
     FactorFileRow(date: DateTime, priceFactor: Decimal, splitFactor: Decimal, referencePrice: Decimal)
     """
     @typing.overload
@@ -137,9 +135,12 @@ class FactorFileRow(System.object):
 
 class LocalDiskFactorFileProvider(System.object, QuantConnect.Interfaces.IFactorFileProvider):
     """
-    Provides an implementation of QuantConnect.Interfaces.IFactorFileProvider that searches the local disk
-    
-    LocalDiskFactorFileProvider()
+    Provides an implementation of QuantConnect.Interfaces.IFactorFileProvider that searches the local disk
+
+    
+
+    LocalDiskFactorFileProvider()
+
     LocalDiskFactorFileProvider(mapFileProvider: IMapFileProvider)
     """
     def Get(self, symbol: QuantConnect.Symbol) -> QuantConnect.Data.Auxiliary.FactorFile:
@@ -160,9 +161,12 @@ class LocalDiskFactorFileProvider(System.object, QuantConnect.Interfaces.IFactor
 
 class LocalDiskMapFileProvider(System.object, QuantConnect.Interfaces.IMapFileProvider):
     """
-    Provides a default implementation of QuantConnect.Interfaces.IMapFileProvider that reads from
-                the local disk
-    
+    Provides a default implementation of QuantConnect.Interfaces.IMapFileProvider that reads from
+
+                the local disk
+
+    
+
     LocalDiskMapFileProvider()
     """
     def Get(self, market: str) -> QuantConnect.Data.Auxiliary.MapFileResolver:
@@ -171,8 +175,10 @@ class LocalDiskMapFileProvider(System.object, QuantConnect.Interfaces.IMapFilePr
 
 class MapFile(System.object, System.Collections.Generic.IEnumerable[MapFileRow], System.Collections.IEnumerable):
     """
-    Represents an entire map file for a specified symbol
-    
+    Represents an entire map file for a specified symbol
+
+    
+
     MapFile(permtick: str, data: IEnumerable[MapFileRow])
     """
     def GetEnumerator(self) -> System.Collections.Generic.IEnumerator[QuantConnect.Data.Auxiliary.MapFileRow]:
@@ -218,9 +224,12 @@ class MapFile(System.object, System.Collections.Generic.IEnumerable[MapFileRow],
 
 class MapFileResolver(System.object, System.Collections.Generic.IEnumerable[MapFile], System.Collections.IEnumerable):
     """
-    Provides a means of mapping a symbol at a point in time to the map file
-                containing that share class's mapping information
-    
+    Provides a means of mapping a symbol at a point in time to the map file
+
+                containing that share class's mapping information
+
+    
+
     MapFileResolver(mapFiles: IEnumerable[MapFile])
     """
     @staticmethod
@@ -249,13 +258,15 @@ class MapFileResolver(System.object, System.Collections.Generic.IEnumerable[MapF
     def __new__(self, mapFiles: typing.List[QuantConnect.Data.Auxiliary.MapFile]) -> None:
         pass
 
-    Empty: MapFileResolver
+    Empty: 'MapFileResolver'
 
 
 class MapFileRow(System.object, System.IEquatable[MapFileRow]):
     """
-    Represents a single row in a map_file. This is a csv file ordered as {date, mapped symbol}
-    
+    Represents a single row in a map_file. This is a csv file ordered as {date, mapped symbol}
+
+    
+
     MapFileRow(date: DateTime, mappedSymbol: str)
     """
     @typing.overload
@@ -316,8 +327,10 @@ class MappingExtensions(System.object):
 
 class ZipEntryName(QuantConnect.Data.BaseData, QuantConnect.Data.IBaseData):
     """
-    Defines a data type that just produces data points from the zip entry names in a zip file
-    
+    Defines a data type that just produces data points from the zip entry names in a zip file
+
+    
+
     ZipEntryName()
     """
     @typing.overload
@@ -345,5 +358,3 @@ class ZipEntryName(QuantConnect.Data.BaseData, QuantConnect.Data.IBaseData):
 
     def Reader(self, *args) -> QuantConnect.Data.BaseData:
         pass
-
-

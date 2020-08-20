@@ -1,14 +1,8 @@
-# encoding: utf-8
-# module QuantConnect.Algorithm.Framework calls itself Framework
-# from QuantConnect.Algorithm, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null, QuantConnect.Common, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null
-# by generator 1.145
-# no doc
-
-# imports
-import datetime
-import QuantConnect.Algorithm
-import QuantConnect.Data.UniverseSelection
 import typing
+import System.Collections.Generic
+import QuantConnect.Data.UniverseSelection
+import QuantConnect.Algorithm
+import datetime
 
 # no functions
 # classes
@@ -19,5 +13,41 @@ class INotifiedSecurityChanges:
         pass
 
 
-# variables with complex values
+class NotifiedSecurityChanges(System.object):
+    """ Provides convenience methods for updating collections in responses to securities changed events """
+    @staticmethod
+    def Update(changes: QuantConnect.Data.UniverseSelection.SecurityChanges, add: typing.Callable[[QuantConnect.Securities.Security], None], remove: typing.Callable[[QuantConnect.Securities.Security], None]) -> None:
+        pass
 
+    @staticmethod
+    @typing.overload
+    def UpdateCollection(securities: typing.List[QuantConnect.Securities.Security], changes: QuantConnect.Data.UniverseSelection.SecurityChanges) -> None:
+        pass
+
+    @staticmethod
+    @typing.overload
+    def UpdateCollection(securities: typing.List[QuantConnect.Algorithm.Framework.TValue], changes: QuantConnect.Data.UniverseSelection.SecurityChanges, valueFactory: typing.Callable[[QuantConnect.Securities.Security], QuantConnect.Algorithm.Framework.TValue]) -> None:
+        pass
+
+    def UpdateCollection(self, *args) -> None:
+        pass
+
+    @staticmethod
+    @typing.overload
+    def UpdateDictionary(dictionary: System.Collections.Generic.IDictionary[QuantConnect.Securities.Security, QuantConnect.Algorithm.Framework.TValue], changes: QuantConnect.Data.UniverseSelection.SecurityChanges, valueFactory: typing.Callable[[QuantConnect.Securities.Security], QuantConnect.Algorithm.Framework.TValue]) -> None:
+        pass
+
+    @staticmethod
+    @typing.overload
+    def UpdateDictionary(dictionary: System.Collections.Generic.IDictionary[QuantConnect.Symbol, QuantConnect.Algorithm.Framework.TValue], changes: QuantConnect.Data.UniverseSelection.SecurityChanges, valueFactory: typing.Callable[[QuantConnect.Securities.Security], QuantConnect.Algorithm.Framework.TValue]) -> None:
+        pass
+
+    @staticmethod
+    @typing.overload
+    def UpdateDictionary(dictionary: System.Collections.Generic.IDictionary[QuantConnect.Algorithm.Framework.TKey, QuantConnect.Algorithm.Framework.TValue], changes: QuantConnect.Data.UniverseSelection.SecurityChanges, keyFactory: typing.Callable[[QuantConnect.Securities.Security], QuantConnect.Algorithm.Framework.TKey], valueFactory: typing.Callable[[QuantConnect.Securities.Security], QuantConnect.Algorithm.Framework.TValue]) -> None:
+        pass
+
+    def UpdateDictionary(self, *args) -> None:
+        pass
+
+    __all__: list

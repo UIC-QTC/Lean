@@ -269,8 +269,8 @@ class Source(System.Enum, System.IComparable, System.IFormattable, System.IConve
     enum Source, values: Estimize (1), WallStreet (0)
     """
     value__: int
-    Estimize: Source
-    WallStreet: Source
+    Estimize: 'Source'
+    WallStreet: 'Source'
 
 
 class Type(System.Enum, System.IComparable, System.IFormattable, System.IConvertible):
@@ -280,7 +280,7 @@ class Type(System.Enum, System.IComparable, System.IFormattable, System.IConvert
     enum Type, values: Eps (0), Revenue (1)
     """
     value__: int
-    Eps: Type
-    Revenue: Type
+    Eps: 'Type'
+    Revenue: 'Type'
 
 

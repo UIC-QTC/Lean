@@ -1,29 +1,29 @@
-# encoding: utf-8
-# module QuantConnect.Data.Custom calls itself Custom
-# from QuantConnect.Common, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null
-# by generator 1.145
-# no doc
-
-# imports
-import datetime
-import QuantConnect
-import QuantConnect.Data
-import System
-import System.IO
 import typing
+import System.IO
+import System
+import QuantConnect.Data
+import QuantConnect
+import datetime
 
 # no functions
 # classes
 
 class FxcmVolume(QuantConnect.Data.BaseData, QuantConnect.Data.IBaseData):
     """
-    FXCM Real FOREX Volume and Transaction data from its clients base, available for the following pairs:
-                    - EURUSD, USDJPY, GBPUSD, USDCHF, EURCHF, AUDUSD, USDCAD,
-                      NZDUSD, EURGBP, EURJPY, GBPJPY, EURAUD, EURCAD, AUDJPY
-                    FXCM only provides support for FX symbols which produced over 110 million average daily volume (ADV) during 2013.
-                    This limit is imposed to ensure we do not highlight low volume/low ticket symbols in addition to other financial
-                    reporting concerns.
-    
+    FXCM Real FOREX Volume and Transaction data from its clients base, available for the following pairs:
+
+                    - EURUSD, USDJPY, GBPUSD, USDCHF, EURCHF, AUDUSD, USDCAD,
+
+                      NZDUSD, EURGBP, EURJPY, GBPJPY, EURAUD, EURCAD, AUDJPY
+
+                    FXCM only provides support for FX symbols which produced over 110 million average daily volume (ADV) during 2013.
+
+                    This limit is imposed to ensure we do not highlight low volume/low ticket symbols in addition to other financial
+
+                    reporting concerns.
+
+    
+
     FxcmVolume()
     """
     @typing.overload
@@ -60,8 +60,10 @@ class FxcmVolume(QuantConnect.Data.BaseData, QuantConnect.Data.IBaseData):
 
 class NullData(QuantConnect.Data.BaseData, QuantConnect.Data.IBaseData):
     """
-    Represents a custom data type that works as a heartbeat of data in live mode
-    
+    Represents a custom data type that works as a heartbeat of data in live mode
+
+    
+
     NullData()
     """
     @typing.overload
@@ -96,9 +98,12 @@ class NullData(QuantConnect.Data.BaseData, QuantConnect.Data.IBaseData):
 
 class Quandl(QuantConnect.Data.DynamicData, QuantConnect.Data.IBaseData, System.Dynamic.IDynamicMetaObjectProvider):
     """
-    Quandl Data Type - Import generic data from quandl, without needing to define Reader methods.
-                This reads the headers of the data imported, and dynamically creates properties for the imported data.
-    
+    Quandl Data Type - Import generic data from quandl, without needing to define Reader methods.
+
+                This reads the headers of the data imported, and dynamically creates properties for the imported data.
+
+    
+
     Quandl()
     """
     @typing.overload
@@ -145,10 +150,14 @@ class Quandl(QuantConnect.Data.DynamicData, QuantConnect.Data.IBaseData, System.
 
 class USEnergyAPI(QuantConnect.Data.BaseData, QuantConnect.Data.IBaseData):
     """
-    US Energy Information Administration provides extensive data on energy usage, import, export,
-                and forecasting across all US energy sectors.
-                https://www.eia.gov/opendata/
-    
+    US Energy Information Administration provides extensive data on energy usage, import, export,
+
+                and forecasting across all US energy sectors.
+
+                https://www.eia.gov/opendata/
+
+    
+
     USEnergyAPI()
     """
     def DefaultResolution(self) -> QuantConnect.Resolution:
@@ -194,7 +203,3 @@ class USEnergyAPI(QuantConnect.Data.BaseData, QuantConnect.Data.IBaseData):
 
     AuthCode: str
     IsAuthCodeSet: bool
-
-
-# variables with complex values
-

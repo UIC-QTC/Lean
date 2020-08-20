@@ -1,35 +1,31 @@
-# encoding: utf-8
-# module QuantConnect.Python calls itself Python
-# from QuantConnect.Common, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null
-# by generator 1.145
-# no doc
-
-# imports
-import datetime
-import Python.Runtime
-import QuantConnect
-import QuantConnect.Brokerages
-import QuantConnect.Data
-import QuantConnect.Data.Market
-import QuantConnect.Interfaces
-import QuantConnect.Orders
-import QuantConnect.Orders.Fees
-import QuantConnect.Orders.Fills
-import QuantConnect.Orders.Slippage
-import QuantConnect.Python
-import QuantConnect.Securities
-import System
-import System.Collections.Generic
-import System.IO
+from .__Python_1 import *
 import typing
+import System.IO
+import System.Collections.Generic
+import System
+import QuantConnect.Securities
+import QuantConnect.Python
+import QuantConnect.Orders.Slippage
+import QuantConnect.Orders.Fills
+import QuantConnect.Orders.Fees
+import QuantConnect.Orders
+import QuantConnect.Interfaces
+import QuantConnect.Data.Market
+import QuantConnect.Data
+import QuantConnect.Brokerages
+import QuantConnect
+import Python.Runtime
+import datetime
 
 # no functions
 # classes
 
 class BrokerageMessageHandlerPythonWrapper(System.object, QuantConnect.Brokerages.IBrokerageMessageHandler):
     """
-    Provides a wrapper for QuantConnect.Brokerages.IBrokerageMessageHandler implementations written in python
-    
+    Provides a wrapper for QuantConnect.Brokerages.IBrokerageMessageHandler implementations written in python
+
+    
+
     BrokerageMessageHandlerPythonWrapper(model: PyObject)
     """
     def Handle(self, message: QuantConnect.Brokerages.BrokerageMessageEvent) -> None:
@@ -42,8 +38,10 @@ class BrokerageMessageHandlerPythonWrapper(System.object, QuantConnect.Brokerage
 
 class BrokerageModelPythonWrapper(System.object, QuantConnect.Brokerages.IBrokerageModel):
     """
-    Provides an implementation of QuantConnect.Brokerages.IBrokerageModel that wraps a Python.Runtime.PyObject object
-    
+    Provides an implementation of QuantConnect.Brokerages.IBrokerageModel that wraps a Python.Runtime.PyObject object
+
+    
+
     BrokerageModelPythonWrapper(model: PyObject)
     """
     def ApplySplit(self, tickets: typing.List[QuantConnect.Orders.OrderTicket], split: QuantConnect.Data.Market.Split) -> None:
@@ -106,8 +104,10 @@ class BrokerageModelPythonWrapper(System.object, QuantConnect.Brokerages.IBroker
 
 class BuyingPowerModelPythonWrapper(System.object, QuantConnect.Securities.IBuyingPowerModel):
     """
-    Wraps a Python.Runtime.PyObject object that represents a security's model of buying power
-    
+    Wraps a Python.Runtime.PyObject object that represents a security's model of buying power
+
+    
+
     BuyingPowerModelPythonWrapper(model: PyObject)
     """
     def GetBuyingPower(self, parameters: QuantConnect.Securities.BuyingPowerParameters) -> QuantConnect.Securities.BuyingPower:
@@ -138,8 +138,10 @@ class BuyingPowerModelPythonWrapper(System.object, QuantConnect.Securities.IBuyi
 
 class FeeModelPythonWrapper(QuantConnect.Orders.Fees.FeeModel, QuantConnect.Orders.Fees.IFeeModel):
     """
-    Provides an order fee model that wraps a Python.Runtime.PyObject object that represents a model that simulates order fees
-    
+    Provides an order fee model that wraps a Python.Runtime.PyObject object that represents a model that simulates order fees
+
+    
+
     FeeModelPythonWrapper(model: PyObject)
     """
     def GetOrderFee(self, parameters: QuantConnect.Orders.Fees.OrderFeeParameters) -> QuantConnect.Orders.Fees.OrderFee:
@@ -152,8 +154,10 @@ class FeeModelPythonWrapper(QuantConnect.Orders.Fees.FeeModel, QuantConnect.Orde
 
 class FillModelPythonWrapper(QuantConnect.Orders.Fills.FillModel, QuantConnect.Orders.Fills.IFillModel):
     """
-    Wraps a Python.Runtime.PyObject object that represents a model that simulates order fill events
-    
+    Wraps a Python.Runtime.PyObject object that represents a model that simulates order fill events
+
+    
+
     FillModelPythonWrapper(model: PyObject)
     """
     def Fill(self, parameters: QuantConnect.Orders.Fills.FillModelParameters) -> QuantConnect.Orders.Fills.Fill:
@@ -186,14 +190,16 @@ class FillModelPythonWrapper(QuantConnect.Orders.Fills.FillModel, QuantConnect.O
 
 class MarginCallModelPythonWrapper(System.object, QuantConnect.Securities.IMarginCallModel):
     """
-    Provides a margin call model that wraps a Python.Runtime.PyObject object that represents the model responsible for picking which orders should be executed during a margin call
-    
+    Provides a margin call model that wraps a Python.Runtime.PyObject object that represents the model responsible for picking which orders should be executed during a margin call
+
+    
+
     MarginCallModelPythonWrapper(model: PyObject)
     """
     def ExecuteMarginCall(self, generatedMarginCallOrders: typing.List[QuantConnect.Orders.SubmitOrderRequest]) -> typing.List[QuantConnect.Orders.OrderTicket]:
         pass
 
-    def GetMarginCallOrders(self, issueMarginCallWarning: System.Boolean) -> typing.List[QuantConnect.Orders.SubmitOrderRequest]:
+    def GetMarginCallOrders(self, issueMarginCallWarning: bool) -> typing.List[QuantConnect.Orders.SubmitOrderRequest]:
         pass
 
     @staticmethod # known case of __new__
@@ -203,8 +209,10 @@ class MarginCallModelPythonWrapper(System.object, QuantConnect.Securities.IMargi
 
 class PandasConverter(System.object):
     """
-    Collection of methods that converts lists of objects in pandas.DataFrame
-    
+    Collection of methods that converts lists of objects in pandas.DataFrame
+
+    
+
     PandasConverter()
     """
     @typing.overload
@@ -227,8 +235,10 @@ class PandasConverter(System.object):
 
 class PandasData(System.object):
     """
-    Organizes a list of data to create pandas.DataFrames
-    
+    Organizes a list of data to create pandas.DataFrames
+
+    
+
     PandasData(data: object)
     """
     @typing.overload
@@ -257,8 +267,10 @@ class PandasData(System.object):
 
 class PythonActivator(System.object):
     """
-    Provides methods for creating new instances of python custom data objects
-    
+    Provides methods for creating new instances of python custom data objects
+
+    
+
     PythonActivator(type: Type, value: PyObject)
     """
     @staticmethod # known case of __new__
@@ -273,10 +285,14 @@ class PythonActivator(System.object):
 
 class PythonData(QuantConnect.Data.DynamicData, QuantConnect.Data.IBaseData, System.Dynamic.IDynamicMetaObjectProvider):
     """
-    Dynamic data class for Python algorithms.
-                Stores properties of python instances in DynamicData dictionary
-    
-    PythonData()
+    Dynamic data class for Python algorithms.
+
+                Stores properties of python instances in DynamicData dictionary
+
+    
+
+    PythonData()
+
     PythonData(pythonData: PyObject)
     """
     def DefaultResolution(self) -> QuantConnect.Resolution:
@@ -330,152 +346,3 @@ class PythonData(QuantConnect.Data.DynamicData, QuantConnect.Data.IBaseData, Sys
         pass
 
     Item: indexer#
-
-
-class PythonInitializer(System.object):
-    """ Helper class for Python initialization """
-    @staticmethod
-    def AddPythonPaths(paths: typing.List[str]) -> None:
-        pass
-
-    @staticmethod
-    def Initialize() -> None:
-        pass
-
-    @staticmethod
-    def SetPythonPathEnvironmentVariable(extraDirectories: typing.List[str]) -> None:
-        pass
-
-    __all__: list
-
-
-class PythonQuandl(QuantConnect.Data.Custom.Quandl, QuantConnect.Data.IBaseData, System.Dynamic.IDynamicMetaObjectProvider):
-    """
-    Dynamic data class for Python algorithms.
-    
-    PythonQuandl()
-    PythonQuandl(valueColumnName: str)
-    """
-    @staticmethod # known case of __new__
-    @typing.overload
-    def __new__(self) -> None:
-        pass
-
-    @typing.overload
-    def __new__(self, valueColumnName: str) -> None:
-        pass
-
-    def __new__(self, *args) -> None:
-        pass
-
-
-class PythonSlice(QuantConnect.Data.Slice, QuantConnect.Interfaces.IExtendedDictionary[Symbol, object], System.Collections.Generic.IEnumerable[KeyValuePair[Symbol, BaseData]], System.Collections.IEnumerable):
-    """
-    Provides a data structure for all of an algorithm's data at a single time step
-    
-    PythonSlice(slice: Slice)
-    """
-    def ContainsKey(self, symbol: QuantConnect.Symbol) -> bool:
-        pass
-
-    @typing.overload
-    def Get(self, type: Python.Runtime.PyObject, symbol: QuantConnect.Symbol) -> object:
-        pass
-
-    @typing.overload
-    def Get(self, type: Python.Runtime.PyObject) -> Python.Runtime.PyObject:
-        pass
-
-    @typing.overload
-    def Get(self) -> QuantConnect.Data.Market.DataDictionary[QuantConnect.Data.T]:
-        pass
-
-    @typing.overload
-    def Get(self, type: type) -> object:
-        pass
-
-    @typing.overload
-    def Get(self, symbol: QuantConnect.Symbol) -> QuantConnect.Data.T:
-        pass
-
-    def Get(self, *args) -> QuantConnect.Data.T:
-        pass
-
-    def TryGetValue(self, symbol: QuantConnect.Symbol, data: System.Object) -> bool:
-        pass
-
-    @staticmethod # known case of __new__
-    def __new__(self, slice: QuantConnect.Data.Slice) -> None:
-        pass
-
-    Count: int
-
-    Keys: typing.List[QuantConnect.Symbol]
-
-    Values: typing.List[QuantConnect.Data.BaseData]
-
-
-    Item: indexer#
-
-
-class PythonWrapper(System.object):
-    """ Provides extension methods for managing python wrapper classes """
-    @staticmethod
-    def ValidateImplementationOf(model: Python.Runtime.PyObject) -> None:
-        pass
-
-    __all__: list
-
-
-class SecurityInitializerPythonWrapper(System.object, QuantConnect.Securities.ISecurityInitializer):
-    """
-    Wraps a Python.Runtime.PyObject object that represents a type capable of initializing a new security
-    
-    SecurityInitializerPythonWrapper(model: PyObject)
-    """
-    def Initialize(self, security: QuantConnect.Securities.Security) -> None:
-        pass
-
-    @staticmethod # known case of __new__
-    def __new__(self, model: Python.Runtime.PyObject) -> None:
-        pass
-
-
-class SlippageModelPythonWrapper(System.object, QuantConnect.Orders.Slippage.ISlippageModel):
-    """
-    Wraps a Python.Runtime.PyObject object that represents a model that simulates market order slippage
-    
-    SlippageModelPythonWrapper(model: PyObject)
-    """
-    def GetSlippageApproximation(self, asset: QuantConnect.Securities.Security, order: QuantConnect.Orders.Order) -> float:
-        pass
-
-    @staticmethod # known case of __new__
-    def __new__(self, model: Python.Runtime.PyObject) -> None:
-        pass
-
-
-class VolatilityModelPythonWrapper(QuantConnect.Securities.Volatility.BaseVolatilityModel, QuantConnect.Securities.IVolatilityModel):
-    """
-    Provides a volatility model that wraps a Python.Runtime.PyObject object that represents a model that computes the volatility of a security
-    
-    VolatilityModelPythonWrapper(model: PyObject)
-    """
-    def GetHistoryRequirements(self, security: QuantConnect.Securities.Security, utcTime: datetime.datetime) -> typing.List[QuantConnect.Data.HistoryRequest]:
-        pass
-
-    def SetSubscriptionDataConfigProvider(self, subscriptionDataConfigProvider: QuantConnect.Interfaces.ISubscriptionDataConfigProvider) -> None:
-        pass
-
-    def Update(self, security: QuantConnect.Securities.Security, data: QuantConnect.Data.BaseData) -> None:
-        pass
-
-    @staticmethod # known case of __new__
-    def __new__(self, model: Python.Runtime.PyObject) -> None:
-        pass
-
-    Volatility: float
-
-    SubscriptionDataConfigProvider: QuantConnect.Interfaces.ISubscriptionDataConfigProvider
-
-

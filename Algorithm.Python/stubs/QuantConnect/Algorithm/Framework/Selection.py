@@ -1,29 +1,28 @@
-# encoding: utf-8
-# module QuantConnect.Algorithm.Framework.Selection calls itself Selection
-# from QuantConnect.Algorithm, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null
-# by generator 1.145
-# no doc
-
-# imports
-import datetime
-import Python.Runtime
-import QuantConnect
-import QuantConnect.Algorithm
-import QuantConnect.Algorithm.Framework.Selection
-import QuantConnect.Data
-import QuantConnect.Data.UniverseSelection
-import QuantConnect.Interfaces
-import QuantConnect.Securities
-import System
+from .__Selection_1 import *
 import typing
+import System.Collections.Generic
+import System
+import QuantConnect.Securities
+import QuantConnect.Scheduling
+import QuantConnect.Interfaces
+import QuantConnect.Data.UniverseSelection
+import QuantConnect.Data
+import QuantConnect.Algorithm.Framework.Selection
+import QuantConnect.Algorithm
+import QuantConnect
+import Python.Runtime
+import NodaTime
+import datetime
 
 # no functions
 # classes
 
 class UniverseSelectionModel(System.object, QuantConnect.Algorithm.Framework.Selection.IUniverseSelectionModel):
     """
-    Provides a base class for universe selection models.
-    
+    Provides a base class for universe selection models.
+
+    
+
     UniverseSelectionModel()
     """
     def CreateUniverses(self, algorithm: QuantConnect.Algorithm.QCAlgorithm) -> typing.List[QuantConnect.Data.UniverseSelection.Universe]:
@@ -33,13 +32,71 @@ class UniverseSelectionModel(System.object, QuantConnect.Algorithm.Framework.Sel
         pass
 
 
+class FundamentalUniverseSelectionModel(QuantConnect.Algorithm.Framework.Selection.UniverseSelectionModel, QuantConnect.Algorithm.Framework.Selection.IUniverseSelectionModel):
+    """ Provides a base class for defining equity coarse/fine fundamental selection models """
+    @staticmethod
+    def Coarse(coarseSelector: typing.Callable[[typing.List[QuantConnect.Data.UniverseSelection.CoarseFundamental]], typing.List[QuantConnect.Symbol]]) -> QuantConnect.Algorithm.Framework.Selection.IUniverseSelectionModel:
+        pass
+
+    def CreateCoarseFundamentalUniverse(self, algorithm: QuantConnect.Algorithm.QCAlgorithm) -> QuantConnect.Data.UniverseSelection.Universe:
+        pass
+
+    def CreateUniverses(self, algorithm: QuantConnect.Algorithm.QCAlgorithm) -> typing.List[QuantConnect.Data.UniverseSelection.Universe]:
+        pass
+
+    @staticmethod
+    def Fine(coarseSelector: typing.Callable[[typing.List[QuantConnect.Data.UniverseSelection.CoarseFundamental]], typing.List[QuantConnect.Symbol]], fineSelector: typing.Callable[[typing.List[QuantConnect.Data.Fundamental.FineFundamental]], typing.List[QuantConnect.Symbol]]) -> QuantConnect.Algorithm.Framework.Selection.IUniverseSelectionModel:
+        pass
+
+    def SelectCoarse(self, algorithm: QuantConnect.Algorithm.QCAlgorithm, coarse: typing.List[QuantConnect.Data.UniverseSelection.CoarseFundamental]) -> typing.List[QuantConnect.Symbol]:
+        pass
+
+    def SelectFine(self, algorithm: QuantConnect.Algorithm.QCAlgorithm, fine: typing.List[QuantConnect.Data.Fundamental.FineFundamental]) -> typing.List[QuantConnect.Symbol]:
+        pass
+
+    @staticmethod # known case of __new__
+    def __new__(self, *args): #cannot find CLR constructor
+        pass
+
+
+class CoarseFundamentalUniverseSelectionModel(QuantConnect.Algorithm.Framework.Selection.FundamentalUniverseSelectionModel, QuantConnect.Algorithm.Framework.Selection.IUniverseSelectionModel):
+    """
+    Portfolio selection model that uses coarse selectors. For US equities only.
+
+    
+
+    CoarseFundamentalUniverseSelectionModel(coarseSelector: Func[IEnumerable[CoarseFundamental], IEnumerable[Symbol]], universeSettings: UniverseSettings, securityInitializer: ISecurityInitializer)
+
+    CoarseFundamentalUniverseSelectionModel(coarseSelector: PyObject, universeSettings: UniverseSettings, securityInitializer: ISecurityInitializer)
+    """
+    def SelectCoarse(self, algorithm: QuantConnect.Algorithm.QCAlgorithm, coarse: typing.List[QuantConnect.Data.UniverseSelection.CoarseFundamental]) -> typing.List[QuantConnect.Symbol]:
+        pass
+
+    @staticmethod # known case of __new__
+    @typing.overload
+    def __new__(self, coarseSelector: typing.Callable[[typing.List[QuantConnect.Data.UniverseSelection.CoarseFundamental]], typing.List[QuantConnect.Symbol]], universeSettings: QuantConnect.Data.UniverseSelection.UniverseSettings, securityInitializer: QuantConnect.Securities.ISecurityInitializer) -> None:
+        pass
+
+    @typing.overload
+    def __new__(self, coarseSelector: Python.Runtime.PyObject, universeSettings: QuantConnect.Data.UniverseSelection.UniverseSettings, securityInitializer: QuantConnect.Securities.ISecurityInitializer) -> None:
+        pass
+
+    def __new__(self, *args) -> None:
+        pass
+
+
 class CompositeUniverseSelectionModel(QuantConnect.Algorithm.Framework.Selection.UniverseSelectionModel, QuantConnect.Algorithm.Framework.Selection.IUniverseSelectionModel):
     """
-    Provides an implementation of QuantConnect.Algorithm.Framework.Selection.IUniverseSelectionModel that combines multiple universe
-                selection models into a single model.
-    
-    CompositeUniverseSelectionModel(*universeSelectionModels: Array[IUniverseSelectionModel])
-    CompositeUniverseSelectionModel(*universeSelectionModels: Array[PyObject])
+    Provides an implementation of QuantConnect.Algorithm.Framework.Selection.IUniverseSelectionModel that combines multiple universe
+
+                selection models into a single model.
+
+    
+
+    CompositeUniverseSelectionModel(*universeSelectionModels: Array[IUniverseSelectionModel])
+
+    CompositeUniverseSelectionModel(*universeSelectionModels: Array[PyObject])
+
     CompositeUniverseSelectionModel(universeSelectionModel: PyObject)
     """
     @typing.overload
@@ -78,8 +135,10 @@ class CompositeUniverseSelectionModel(QuantConnect.Algorithm.Framework.Selection
 
 class CustomUniverse(QuantConnect.Data.UniverseSelection.UserDefinedUniverse, System.IDisposable, System.Collections.Specialized.INotifyCollectionChanged, QuantConnect.Data.UniverseSelection.ITimeTriggeredUniverse):
     """
-    Defines a universe as a set of dynamically set symbols.
-    
+    Defines a universe as a set of dynamically set symbols.
+
+    
+
     CustomUniverse(configuration: SubscriptionDataConfig, universeSettings: UniverseSettings, interval: TimeSpan, selector: Func[DateTime, IEnumerable[str]])
     """
     @typing.overload
@@ -100,12 +159,18 @@ class CustomUniverse(QuantConnect.Data.UniverseSelection.UserDefinedUniverse, Sy
 
 class CustomUniverseSelectionModel(QuantConnect.Algorithm.Framework.Selection.UniverseSelectionModel, QuantConnect.Algorithm.Framework.Selection.IUniverseSelectionModel):
     """
-    Provides an implementation of QuantConnect.Algorithm.Framework.Selection.IUniverseSelectionModel that simply
-                subscribes to the specified set of symbols
-    
-    CustomUniverseSelectionModel(name: str, selector: Func[DateTime, IEnumerable[str]])
-    CustomUniverseSelectionModel(name: str, selector: PyObject)
-    CustomUniverseSelectionModel(securityType: SecurityType, name: str, market: str, selector: Func[DateTime, IEnumerable[str]], universeSettings: UniverseSettings, interval: TimeSpan)
+    Provides an implementation of QuantConnect.Algorithm.Framework.Selection.IUniverseSelectionModel that simply
+
+                subscribes to the specified set of symbols
+
+    
+
+    CustomUniverseSelectionModel(name: str, selector: Func[DateTime, IEnumerable[str]])
+
+    CustomUniverseSelectionModel(name: str, selector: PyObject)
+
+    CustomUniverseSelectionModel(securityType: SecurityType, name: str, market: str, selector: Func[DateTime, IEnumerable[str]], universeSettings: UniverseSettings, interval: TimeSpan)
+
     CustomUniverseSelectionModel(securityType: SecurityType, name: str, market: str, selector: PyObject, universeSettings: UniverseSettings, interval: TimeSpan)
     """
     def CreateUniverses(self, algorithm: QuantConnect.Algorithm.QCAlgorithm) -> typing.List[QuantConnect.Data.UniverseSelection.Universe]:
@@ -138,110 +203,19 @@ class CustomUniverseSelectionModel(QuantConnect.Algorithm.Framework.Selection.Un
         pass
 
 
-class IUniverseSelectionModel:
-    """ Algorithm framework model that defines the universes to be used by an algorithm """
-    def CreateUniverses(self, algorithm: QuantConnect.Algorithm.QCAlgorithm) -> typing.List[QuantConnect.Data.UniverseSelection.Universe]:
-        pass
-
-    def GetNextRefreshTimeUtc(self) -> datetime.datetime:
-        pass
-
-
-class ManualUniverse(QuantConnect.Data.UniverseSelection.UserDefinedUniverse, System.IDisposable, System.Collections.Specialized.INotifyCollectionChanged, QuantConnect.Data.UniverseSelection.ITimeTriggeredUniverse):
+class EmaCrossUniverseSelectionModel(QuantConnect.Algorithm.Framework.Selection.FundamentalUniverseSelectionModel, QuantConnect.Algorithm.Framework.Selection.IUniverseSelectionModel):
     """
-    Defines a universe as a set of manually set symbols. This differs from QuantConnect.Data.UniverseSelection.UserDefinedUniverse
-                in that these securities were not added via AddSecurity.
-    
-    ManualUniverse(configuration: SubscriptionDataConfig, universeSettings: UniverseSettings, securityInitializer: ISecurityInitializer, symbols: IEnumerable[Symbol])
-    ManualUniverse(configuration: SubscriptionDataConfig, universeSettings: UniverseSettings, symbols: IEnumerable[Symbol])
-    ManualUniverse(configuration: SubscriptionDataConfig, universeSettings: UniverseSettings, symbols: Array[Symbol])
+    Provides an implementation of QuantConnect.Algorithm.Framework.Selection.FundamentalUniverseSelectionModel that subscribes
+
+                to symbols with the larger delta by percentage between the two exponential moving average
+
+    
+
+    EmaCrossUniverseSelectionModel(fastPeriod: int, slowPeriod: int, universeCount: int, universeSettings: UniverseSettings, securityInitializer: ISecurityInitializer)
     """
-    @typing.overload
-    def GetSubscriptionRequests(self, security: QuantConnect.Securities.Security, currentTimeUtc: datetime.datetime, maximumEndTimeUtc: datetime.datetime, subscriptionService: QuantConnect.Interfaces.ISubscriptionDataConfigService) -> typing.List[QuantConnect.Data.UniverseSelection.SubscriptionRequest]:
-        pass
-
-    @typing.overload
-    def GetSubscriptionRequests(self, security: QuantConnect.Securities.Security, currentTimeUtc: datetime.datetime, maximumEndTimeUtc: datetime.datetime) -> typing.List[QuantConnect.Data.UniverseSelection.SubscriptionRequest]:
-        pass
-
-    def GetSubscriptionRequests(self, *args) -> typing.List[QuantConnect.Data.UniverseSelection.SubscriptionRequest]:
+    def SelectCoarse(self, algorithm: QuantConnect.Algorithm.QCAlgorithm, coarse: typing.List[QuantConnect.Data.UniverseSelection.CoarseFundamental]) -> typing.List[QuantConnect.Symbol]:
         pass
 
     @staticmethod # known case of __new__
-    @typing.overload
-    def __new__(self, configuration: QuantConnect.Data.SubscriptionDataConfig, universeSettings: QuantConnect.Data.UniverseSelection.UniverseSettings, securityInitializer: QuantConnect.Securities.ISecurityInitializer, symbols: typing.List[QuantConnect.Symbol]) -> None:
+    def __new__(self, fastPeriod: int, slowPeriod: int, universeCount: int, universeSettings: QuantConnect.Data.UniverseSelection.UniverseSettings, securityInitializer: QuantConnect.Securities.ISecurityInitializer) -> None:
         pass
-
-    @typing.overload
-    def __new__(self, configuration: QuantConnect.Data.SubscriptionDataConfig, universeSettings: QuantConnect.Data.UniverseSelection.UniverseSettings, symbols: typing.List[QuantConnect.Symbol]) -> None:
-        pass
-
-    @typing.overload
-    def __new__(self, configuration: QuantConnect.Data.SubscriptionDataConfig, universeSettings: QuantConnect.Data.UniverseSelection.UniverseSettings, symbols: typing.List[QuantConnect.Symbol]) -> None:
-        pass
-
-    def __new__(self, *args) -> None:
-        pass
-
-
-class ManualUniverseSelectionModel(QuantConnect.Algorithm.Framework.Selection.UniverseSelectionModel, QuantConnect.Algorithm.Framework.Selection.IUniverseSelectionModel):
-    """
-    Provides an implementation of QuantConnect.Algorithm.Framework.Selection.IUniverseSelectionModel that simply
-                subscribes to the specified set of symbols
-    
-    ManualUniverseSelectionModel()
-    ManualUniverseSelectionModel(symbols: IEnumerable[Symbol])
-    ManualUniverseSelectionModel(*symbols: Array[Symbol])
-    ManualUniverseSelectionModel(symbols: IEnumerable[Symbol], universeSettings: UniverseSettings, securityInitializer: ISecurityInitializer)
-    """
-    def CreateUniverses(self, algorithm: QuantConnect.Algorithm.QCAlgorithm) -> typing.List[QuantConnect.Data.UniverseSelection.Universe]:
-        pass
-
-    @staticmethod # known case of __new__
-    @typing.overload
-    def __new__(self) -> None:
-        pass
-
-    @typing.overload
-    def __new__(self, symbols: typing.List[QuantConnect.Symbol]) -> None:
-        pass
-
-    @typing.overload
-    def __new__(self, symbols: typing.List[QuantConnect.Symbol]) -> None:
-        pass
-
-    @typing.overload
-    def __new__(self, symbols: typing.List[QuantConnect.Symbol], universeSettings: QuantConnect.Data.UniverseSelection.UniverseSettings, securityInitializer: QuantConnect.Securities.ISecurityInitializer) -> None:
-        pass
-
-    def __new__(self, *args) -> None:
-        pass
-
-
-class NullUniverseSelectionModel(QuantConnect.Algorithm.Framework.Selection.UniverseSelectionModel, QuantConnect.Algorithm.Framework.Selection.IUniverseSelectionModel):
-    """
-    Provides a null implementation of QuantConnect.Algorithm.Framework.Selection.IUniverseSelectionModel
-    
-    NullUniverseSelectionModel()
-    """
-    def CreateUniverses(self, algorithm: QuantConnect.Algorithm.QCAlgorithm) -> typing.List[QuantConnect.Data.UniverseSelection.Universe]:
-        pass
-
-
-class UniverseSelectionModelPythonWrapper(QuantConnect.Algorithm.Framework.Selection.UniverseSelectionModel, QuantConnect.Algorithm.Framework.Selection.IUniverseSelectionModel):
-    """
-    Provides an implementation of QuantConnect.Algorithm.Framework.Selection.IUniverseSelectionModel that wraps a Python.Runtime.PyObject object
-    
-    UniverseSelectionModelPythonWrapper(model: PyObject)
-    """
-    def CreateUniverses(self, algorithm: QuantConnect.Algorithm.QCAlgorithm) -> typing.List[QuantConnect.Data.UniverseSelection.Universe]:
-        pass
-
-    def GetNextRefreshTimeUtc(self) -> datetime.datetime:
-        pass
-
-    @staticmethod # known case of __new__
-    def __new__(self, model: Python.Runtime.PyObject) -> None:
-        pass
-
-

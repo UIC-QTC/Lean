@@ -1,27 +1,25 @@
-# encoding: utf-8
-# module QuantConnect.Data.Custom.SmartInsider calls itself SmartInsider
-# from QuantConnect.Common, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null
-# by generator 1.145
-# no doc
-
-# imports
-import datetime
-import NodaTime
-import QuantConnect
-import QuantConnect.Data
-import System
-import System.IO
+from .__SmartInsider_1 import *
 import typing
+import System.IO
+import System
+import QuantConnect.Data
+import QuantConnect
+import NodaTime
+import datetime
 
 # no functions
 # classes
 
 class SmartInsiderEvent(QuantConnect.Data.BaseData, QuantConnect.Data.IBaseData):
     """
-    SmartInsider Intention and Transaction events. These are fields
-                that are shared between intentions and transactions.
-    
-    SmartInsiderEvent()
+    SmartInsider Intention and Transaction events. These are fields
+
+                that are shared between intentions and transactions.
+
+    
+
+    SmartInsiderEvent()
+
     SmartInsiderEvent(tsvLine: str)
     """
     def DataTimeZone(self) -> NodaTime.DateTimeZone:
@@ -105,72 +103,83 @@ class SmartInsiderEvent(QuantConnect.Data.BaseData, QuantConnect.Data.IBaseData)
 
 class SmartInsiderEventType(System.Enum, System.IComparable, System.IFormattable, System.IConvertible):
     """
-    Describes what will or has taken place in an execution
-    
+    Describes what will or has taken place in an execution
+
+    
+
     enum SmartInsiderEventType, values: Authorization (0), Cancellation (6), DownwardsRevision (4), Intention (1), NotSpecified (10), PlanReStarted (9), PlanSuspension (8), RevisedDetails (5), SeekAuthorization (7), Transaction (2), UpwardsRevision (3)
     """
     value__: int
-    Authorization: SmartInsiderEventType
-    Cancellation: SmartInsiderEventType
-    DownwardsRevision: SmartInsiderEventType
-    Intention: SmartInsiderEventType
-    NotSpecified: SmartInsiderEventType
-    PlanReStarted: SmartInsiderEventType
-    PlanSuspension: SmartInsiderEventType
-    RevisedDetails: SmartInsiderEventType
-    SeekAuthorization: SmartInsiderEventType
-    Transaction: SmartInsiderEventType
-    UpwardsRevision: SmartInsiderEventType
+    Authorization: 'SmartInsiderEventType'
+    Cancellation: 'SmartInsiderEventType'
+    DownwardsRevision: 'SmartInsiderEventType'
+    Intention: 'SmartInsiderEventType'
+    NotSpecified: 'SmartInsiderEventType'
+    PlanReStarted: 'SmartInsiderEventType'
+    PlanSuspension: 'SmartInsiderEventType'
+    RevisedDetails: 'SmartInsiderEventType'
+    SeekAuthorization: 'SmartInsiderEventType'
+    Transaction: 'SmartInsiderEventType'
+    UpwardsRevision: 'SmartInsiderEventType'
 
 
 class SmartInsiderExecution(System.Enum, System.IComparable, System.IFormattable, System.IConvertible):
     """
-    Describes how the transaction was executed
-    
+    Describes how the transaction was executed
+
+    
+
     enum SmartInsiderExecution, values: Market (0), OffMarket (2), TenderOffer (1)
     """
     value__: int
-    Market: SmartInsiderExecution
-    OffMarket: SmartInsiderExecution
-    TenderOffer: SmartInsiderExecution
+    Market: 'SmartInsiderExecution'
+    OffMarket: 'SmartInsiderExecution'
+    TenderOffer: 'SmartInsiderExecution'
 
 
 class SmartInsiderExecutionEntity(System.Enum, System.IComparable, System.IFormattable, System.IConvertible):
     """
-    Entity that intends to or executed the transaction
-    
+    Entity that intends to or executed the transaction
+
+    
+
     enum SmartInsiderExecutionEntity, values: Broker (2), EmployeeBenefitTrust (4), EmployerBenefitTrust (3), Issuer (0), Subsidiary (1), ThirdParty (5)
     """
     value__: int
-    Broker: SmartInsiderExecutionEntity
-    EmployeeBenefitTrust: SmartInsiderExecutionEntity
-    EmployerBenefitTrust: SmartInsiderExecutionEntity
-    Issuer: SmartInsiderExecutionEntity
-    Subsidiary: SmartInsiderExecutionEntity
-    ThirdParty: SmartInsiderExecutionEntity
+    Broker: 'SmartInsiderExecutionEntity'
+    EmployeeBenefitTrust: 'SmartInsiderExecutionEntity'
+    EmployerBenefitTrust: 'SmartInsiderExecutionEntity'
+    Issuer: 'SmartInsiderExecutionEntity'
+    Subsidiary: 'SmartInsiderExecutionEntity'
+    ThirdParty: 'SmartInsiderExecutionEntity'
 
 
 class SmartInsiderExecutionHolding(System.Enum, System.IComparable, System.IFormattable, System.IConvertible):
     """
-    Details regarding the way holdings will be or were processed in a buyback execution
-    
+    Details regarding the way holdings will be or were processed in a buyback execution
+
+    
+
     enum SmartInsiderExecutionHolding, values: Cancellation (1), Error (6), NotReported (4), SatisfyEmployeeTax (3), SatisfyStockVesting (5), Treasury (0), Trust (2)
     """
     value__: int
-    Cancellation: SmartInsiderExecutionHolding
-    Error: SmartInsiderExecutionHolding
-    NotReported: SmartInsiderExecutionHolding
-    SatisfyEmployeeTax: SmartInsiderExecutionHolding
-    SatisfyStockVesting: SmartInsiderExecutionHolding
-    Treasury: SmartInsiderExecutionHolding
-    Trust: SmartInsiderExecutionHolding
+    Cancellation: 'SmartInsiderExecutionHolding'
+    Error: 'SmartInsiderExecutionHolding'
+    NotReported: 'SmartInsiderExecutionHolding'
+    SatisfyEmployeeTax: 'SmartInsiderExecutionHolding'
+    SatisfyStockVesting: 'SmartInsiderExecutionHolding'
+    Treasury: 'SmartInsiderExecutionHolding'
+    Trust: 'SmartInsiderExecutionHolding'
 
 
 class SmartInsiderIntention(QuantConnect.Data.Custom.SmartInsider.SmartInsiderEvent, QuantConnect.Data.IBaseData):
     """
-    Smart Insider Intentions - Intention to execute a stock buyback and details about the future event
-    
-    SmartInsiderIntention()
+    Smart Insider Intentions - Intention to execute a stock buyback and details about the future event
+
+    
+
+    SmartInsiderIntention()
+
     SmartInsiderIntention(line: str)
     """
     @typing.overload
@@ -258,9 +267,12 @@ class SmartInsiderIntention(QuantConnect.Data.Custom.SmartInsider.SmartInsiderEv
 
 class SmartInsiderTransaction(QuantConnect.Data.Custom.SmartInsider.SmartInsiderEvent, QuantConnect.Data.IBaseData):
     """
-    Smart Insider Transaction - Execution of a stock buyback and details about the event occurred
-    
-    SmartInsiderTransaction()
+    Smart Insider Transaction - Execution of a stock buyback and details about the event occurred
+
+    
+
+    SmartInsiderTransaction()
+
     SmartInsiderTransaction(line: str)
     """
     @typing.overload
@@ -351,6 +363,3 @@ class SmartInsiderTransaction(QuantConnect.Data.Custom.SmartInsider.SmartInsider
     USDValue: typing.Optional[float]
 
     VolumePercentage: typing.Optional[float]
-
-
-

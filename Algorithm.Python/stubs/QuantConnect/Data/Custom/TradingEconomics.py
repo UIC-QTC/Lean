@@ -25,10 +25,10 @@ class EarningsType(System.Enum, System.IComparable, System.IFormattable, System.
     enum EarningsType, values: Dividends (2), Earnings (0), IPO (1), Split (3)
     """
     value__: int
-    Dividends: EarningsType
-    Earnings: EarningsType
-    IPO: EarningsType
-    Split: EarningsType
+    Dividends: 'EarningsType'
+    Earnings: 'EarningsType'
+    IPO: 'EarningsType'
+    Split: 'EarningsType'
 
 
 class TradingEconomics(System.object):
@@ -224,9 +224,9 @@ class TradingEconomicsImportance(System.Enum, System.IComparable, System.IFormat
     enum TradingEconomicsImportance, values: High (2), Low (0), Medium (1)
     """
     value__: int
-    High: TradingEconomicsImportance
-    Low: TradingEconomicsImportance
-    Medium: TradingEconomicsImportance
+    High: 'TradingEconomicsImportance'
+    Low: 'TradingEconomicsImportance'
+    Medium: 'TradingEconomicsImportance'
 
 
 class TradingEconomicsIndicator(QuantConnect.Data.BaseData, QuantConnect.Data.IBaseData):

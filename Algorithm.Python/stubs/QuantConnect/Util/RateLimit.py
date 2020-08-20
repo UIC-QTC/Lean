@@ -127,7 +127,7 @@ class ThreadSleepStrategy(System.object, QuantConnect.Util.RateLimit.ISleepStrat
     def __new__(self, milliseconds: int) -> None:
         pass
 
-    Yielding: ThreadSleepStrategy
+    Yielding: 'ThreadSleepStrategy'
 
 
 class TokenBucket(System.object):

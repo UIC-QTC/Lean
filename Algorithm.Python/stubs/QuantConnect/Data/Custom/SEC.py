@@ -1,25 +1,21 @@
-# encoding: utf-8
-# module QuantConnect.Data.Custom.SEC calls itself SEC
-# from QuantConnect.Common, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null
-# by generator 1.145
-# no doc
-
-# imports
-import datetime
-import QuantConnect
-import QuantConnect.Data
-import QuantConnect.Data.Custom.SEC
-import System
-import System.IO
+from .__SEC_1 import *
 import typing
+import System.IO
+import System
+import QuantConnect.Data.Custom.SEC
+import QuantConnect.Data
+import QuantConnect
+import datetime
 
 # no functions
 # classes
 
 class ISECReport(QuantConnect.Data.IBaseData):
     """
-    Base interface for all SEC report types.
-                Using an interface, we can retrieve all report types with a single
+    Base interface for all SEC report types.
+
+                Using an interface, we can retrieve all report types with a single
+
                 call to QuantConnect.Data.Slice.Get
     """
     Report: QuantConnect.Data.Custom.SEC.SECReportSubmission
@@ -28,12 +24,18 @@ class ISECReport(QuantConnect.Data.IBaseData):
 
 class SECReport10K(QuantConnect.Data.BaseData, QuantConnect.Data.IBaseData, QuantConnect.Data.Custom.SEC.ISECReport):
     """
-    SEC 10-K report (annual earnings) QuantConnect.Data.BaseData implementation.
-                Using this class, you can retrieve SEC report data for a security if it exists.
-                If the ticker you want no longer trades, you can also use the CIK of the company
-                you want data for as well except for currently traded stocks. This may change in the future.
-    
-    SECReport10K()
+    SEC 10-K report (annual earnings) QuantConnect.Data.BaseData implementation.
+
+                Using this class, you can retrieve SEC report data for a security if it exists.
+
+                If the ticker you want no longer trades, you can also use the CIK of the company
+
+                you want data for as well except for currently traded stocks. This may change in the future.
+
+    
+
+    SECReport10K()
+
     SECReport10K(report: SECReportSubmission)
     """
     @typing.overload
@@ -100,12 +102,18 @@ class SECReport10K(QuantConnect.Data.BaseData, QuantConnect.Data.IBaseData, Quan
 
 class SECReport10Q(QuantConnect.Data.BaseData, QuantConnect.Data.IBaseData, QuantConnect.Data.Custom.SEC.ISECReport):
     """
-    SEC 10-Q report (quarterly earnings) QuantConnect.Data.BaseData implementation.
-                Using this class, you can retrieve SEC report data for a security if it exists.
-                If the ticker you want no longer trades, you can also use the CIK of the company
-                you want data for as well except for currently traded stocks. This may change in the future.
-    
-    SECReport10Q()
+    SEC 10-Q report (quarterly earnings) QuantConnect.Data.BaseData implementation.
+
+                Using this class, you can retrieve SEC report data for a security if it exists.
+
+                If the ticker you want no longer trades, you can also use the CIK of the company
+
+                you want data for as well except for currently traded stocks. This may change in the future.
+
+    
+
+    SECReport10Q()
+
     SECReport10Q(report: SECReportSubmission)
     """
     @typing.overload
@@ -172,12 +180,18 @@ class SECReport10Q(QuantConnect.Data.BaseData, QuantConnect.Data.IBaseData, Quan
 
 class SECReport8K(QuantConnect.Data.BaseData, QuantConnect.Data.IBaseData, QuantConnect.Data.Custom.SEC.ISECReport):
     """
-    SEC 8-K report (important investor notices) QuantConnect.Data.BaseData implementation.
-                Using this class, you can retrieve SEC report data for a security if it exists.
-                If the ticker you want no longer trades, you can also use the CIK of the company
-                you want data for as well except for currently traded stocks. This may change in the future.
-    
-    SECReport8K()
+    SEC 8-K report (important investor notices) QuantConnect.Data.BaseData implementation.
+
+                Using this class, you can retrieve SEC report data for a security if it exists.
+
+                If the ticker you want no longer trades, you can also use the CIK of the company
+
+                you want data for as well except for currently traded stocks. This may change in the future.
+
+    
+
+    SECReport8K()
+
     SECReport8K(report: SECReportSubmission)
     """
     @typing.overload
@@ -262,8 +276,10 @@ class SECReportCompanyData(System.object):
 
 class SECReportDateTimeConverter(Newtonsoft.Json.Converters.IsoDateTimeConverter):
     """
-    Specifies format for parsing System.DateTime values from SEC data
-    
+    Specifies format for parsing System.DateTime values from SEC data
+
+    
+
     SECReportDateTimeConverter()
     """
 
@@ -310,32 +326,3 @@ class SECReportIndexDirectory(System.object):
 class SECReportIndexFile(System.object):
     """ SECReportIndexFile() """
     Directory: QuantConnect.Data.Custom.SEC.SECReportIndexDirectory
-
-class SECReportIndexItem(System.object):
-    """ SECReportIndexItem() """
-    FileType: str
-    LastModified: datetime.datetime
-    Name: str
-    Size: str
-
-class SECReportMailAddress(System.object):
-    """ SECReportMailAddress() """
-    City: str
-    State: str
-    StreetOne: str
-    StreetTwo: str
-    Zip: str
-
-class SECReportSubmission(System.object):
-    """ SECReportSubmission() """
-    AccessionNumber: str
-    Documents: typing.List[QuantConnect.Data.Custom.SEC.SECReportDocument]
-    Filers: typing.List[QuantConnect.Data.Custom.SEC.SECReportFiler]
-    FilingDate: datetime.datetime
-    FilingDateChange: datetime.datetime
-    FormType: str
-    Items: typing.List[str]
-    MadeAvailableAt: datetime.datetime
-    Period: datetime.datetime
-    PublicDocumentCount: str
-

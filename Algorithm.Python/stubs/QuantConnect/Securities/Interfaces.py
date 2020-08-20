@@ -24,8 +24,8 @@ class AdjustmentType(System.Enum, System.IComparable, System.IFormattable, Syste
     enum AdjustmentType, values: BackAdjusted (1), ForwardAdjusted (0)
     """
     value__: int
-    BackAdjusted: AdjustmentType
-    ForwardAdjusted: AdjustmentType
+    BackAdjusted: 'AdjustmentType'
+    ForwardAdjusted: 'AdjustmentType'
 
 
 class IContinuousContractModel:

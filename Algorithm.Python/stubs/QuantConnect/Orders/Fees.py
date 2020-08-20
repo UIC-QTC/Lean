@@ -138,7 +138,7 @@ class OrderFee(System.object):
     Value: QuantConnect.Securities.CashAmount
 
 
-    Zero: OrderFee
+    Zero: 'OrderFee'
 
 
 class OrderFeeParameters(System.object):

@@ -10,7 +10,6 @@ import QuantConnect
 import QuantConnect.Data
 import QuantConnect.Securities
 import QuantConnect.Securities.Forex
-import System
 import System.Collections.Concurrent
 import typing
 
@@ -25,7 +24,7 @@ class Forex(QuantConnect.Securities.Security, QuantConnect.Interfaces.ISecurityP
     Forex(symbol: Symbol, exchangeHours: SecurityExchangeHours, quoteCurrency: Cash, symbolProperties: SymbolProperties, currencyConverter: ICurrencyConverter, registeredTypes: IRegisteredSecurityDataTypesProvider, securityCache: SecurityCache)
     """
     @staticmethod
-    def DecomposeCurrencyPair(currencyPair: str, baseCurrency: System.String, quoteCurrency: System.String) -> None:
+    def DecomposeCurrencyPair(currencyPair: str, baseCurrency: str, quoteCurrency: str) -> None:
         pass
 
     @staticmethod # known case of __new__

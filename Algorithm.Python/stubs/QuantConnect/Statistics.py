@@ -1,27 +1,24 @@
-# encoding: utf-8
-# module QuantConnect.Statistics calls itself Statistics
-# from QuantConnect.Common, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null
-# by generator 1.145
-# no doc
-
-# imports
-import datetime
-import QuantConnect
-import QuantConnect.Interfaces
-import QuantConnect.Orders
-import QuantConnect.Statistics
-import System
-import System.Collections.Generic
+from .__Statistics_1 import *
 import typing
+import System.Collections.Generic
+import System
+import QuantConnect.Statistics
+import QuantConnect.Orders
+import QuantConnect.Interfaces
+import QuantConnect
+import datetime
 
 # no functions
 # classes
 
 class AlgorithmPerformance(System.object):
     """
-    The QuantConnect.Statistics.AlgorithmPerformance class is a wrapper for QuantConnect.Statistics.AlgorithmPerformance.TradeStatistics and QuantConnect.Statistics.AlgorithmPerformance.PortfolioStatistics
-    
-    AlgorithmPerformance(trades: List[Trade], profitLoss: SortedDictionary[DateTime, Decimal], equity: SortedDictionary[DateTime, Decimal], listPerformance: List[float], listBenchmark: List[float], startingCapital: Decimal)
+    The QuantConnect.Statistics.AlgorithmPerformance class is a wrapper for QuantConnect.Statistics.AlgorithmPerformance.TradeStatistics and QuantConnect.Statistics.AlgorithmPerformance.PortfolioStatistics
+
+    
+
+    AlgorithmPerformance(trades: List[Trade], profitLoss: SortedDictionary[DateTime, Decimal], equity: SortedDictionary[DateTime, Decimal], listPerformance: List[float], listBenchmark: List[float], startingCapital: Decimal)
+
     AlgorithmPerformance()
     """
     @staticmethod # known case of __new__
@@ -46,33 +43,41 @@ class AlgorithmPerformance(System.object):
 
 class FillGroupingMethod(System.Enum, System.IComparable, System.IFormattable, System.IConvertible):
     """
-    The method used to group order fills into trades
-    
+    The method used to group order fills into trades
+
+    
+
     enum FillGroupingMethod, values: FillToFill (0), FlatToFlat (1), FlatToReduced (2)
     """
     value__: int
-    FillToFill: FillGroupingMethod
-    FlatToFlat: FillGroupingMethod
-    FlatToReduced: FillGroupingMethod
+    FillToFill: 'FillGroupingMethod'
+    FlatToFlat: 'FillGroupingMethod'
+    FlatToReduced: 'FillGroupingMethod'
 
 
 class FillMatchingMethod(System.Enum, System.IComparable, System.IFormattable, System.IConvertible):
     """
-    The method used to match offsetting order fills
-    
+    The method used to match offsetting order fills
+
+    
+
     enum FillMatchingMethod, values: FIFO (0), LIFO (1)
     """
     value__: int
-    FIFO: FillMatchingMethod
-    LIFO: FillMatchingMethod
+    FIFO: 'FillMatchingMethod'
+    LIFO: 'FillMatchingMethod'
 
 
 class FitnessScoreManager(System.object):
     """
-    Implements a fitness score calculator needed to account for strategy volatility,
-                returns, drawdown, and factor in the turnover to ensure the algorithm engagement
-                is statistically significant
-    
+    Implements a fitness score calculator needed to account for strategy volatility,
+
+                returns, drawdown, and factor in the turnover to ensure the algorithm engagement
+
+                is statistically significant
+
+    
+
     FitnessScoreManager()
     """
     def Initialize(self, algorithm: QuantConnect.Interfaces.IAlgorithm) -> None:
@@ -97,9 +102,12 @@ class FitnessScoreManager(System.object):
 
 class KellyCriterionManager(System.object):
     """
-    Class in charge of calculating the Kelly Criterion values.
-                Will use the sample values of the last year.
-    
+    Class in charge of calculating the Kelly Criterion values.
+
+                Will use the sample values of the last year.
+
+    
+
     KellyCriterionManager()
     """
     def AddNewValue(self, newValue: float, time: datetime.datetime) -> None:
@@ -116,9 +124,12 @@ class KellyCriterionManager(System.object):
 
 class PortfolioStatistics(System.object):
     """
-    The QuantConnect.Statistics.PortfolioStatistics class represents a set of statistics calculated from equity and benchmark samples
-    
-    PortfolioStatistics(profitLoss: SortedDictionary[DateTime, Decimal], equity: SortedDictionary[DateTime, Decimal], listPerformance: List[float], listBenchmark: List[float], startingCapital: Decimal, tradingDaysPerYear: int)
+    The QuantConnect.Statistics.PortfolioStatistics class represents a set of statistics calculated from equity and benchmark samples
+
+    
+
+    PortfolioStatistics(profitLoss: SortedDictionary[DateTime, Decimal], equity: SortedDictionary[DateTime, Decimal], listPerformance: List[float], listBenchmark: List[float], startingCapital: Decimal, tradingDaysPerYear: int)
+
     PortfolioStatistics()
     """
     @staticmethod
@@ -177,8 +188,10 @@ class PortfolioStatistics(System.object):
 
 class Statistics(System.object):
     """
-    Calculate all the statistics required from the backtest, based on the equity curve and the profit loss statement.
-    
+    Calculate all the statistics required from the backtest, based on the equity curve and the profit loss statement.
+
+    
+
     Statistics()
     """
     @staticmethod
@@ -257,9 +270,12 @@ class StatisticsBuilder(System.object):
 
 class StatisticsResults(System.object):
     """
-    The QuantConnect.Statistics.StatisticsResults class represents total and rolling statistics for an algorithm
-    
-    StatisticsResults(totalPerformance: AlgorithmPerformance, rollingPerformances: Dictionary[str, AlgorithmPerformance], summary: Dictionary[str, str])
+    The QuantConnect.Statistics.StatisticsResults class represents total and rolling statistics for an algorithm
+
+    
+
+    StatisticsResults(totalPerformance: AlgorithmPerformance, rollingPerformances: Dictionary[str, AlgorithmPerformance], summary: Dictionary[str, str])
+
     StatisticsResults()
     """
     @staticmethod # known case of __new__
@@ -284,8 +300,10 @@ class StatisticsResults(System.object):
 
 class Trade(System.object):
     """
-    Represents a closed trade
-    
+    Represents a closed trade
+
+    
+
     Trade()
     """
     Direction: QuantConnect.Statistics.TradeDirection
@@ -318,8 +336,10 @@ class Trade(System.object):
 
 class TradeBuilder(System.object, QuantConnect.Interfaces.ITradeBuilder):
     """
-    The QuantConnect.Statistics.TradeBuilder class generates trades from executions and market price updates
-    
+    The QuantConnect.Statistics.TradeBuilder class generates trades from executions and market price updates
+
+    
+
     TradeBuilder(groupingMethod: FillGroupingMethod, matchingMethod: FillMatchingMethod)
     """
     def HasOpenPosition(self, symbol: QuantConnect.Symbol) -> bool:
@@ -339,120 +359,3 @@ class TradeBuilder(System.object, QuantConnect.Interfaces.ITradeBuilder):
         pass
 
     ClosedTrades: typing.List[QuantConnect.Statistics.Trade]
-
-
-
-class TradeDirection(System.Enum, System.IComparable, System.IFormattable, System.IConvertible):
-    """
-    Direction of a trade
-    
-    enum TradeDirection, values: Long (0), Short (1)
-    """
-    value__: int
-    Long: TradeDirection
-    Short: TradeDirection
-
-
-class TradeStatistics(System.object):
-    """
-    The QuantConnect.Statistics.TradeStatistics class represents a set of statistics calculated from a list of closed trades
-    
-    TradeStatistics(trades: IEnumerable[Trade])
-    TradeStatistics()
-    """
-    @staticmethod # known case of __new__
-    @typing.overload
-    def __new__(self, trades: typing.List[QuantConnect.Statistics.Trade]) -> None:
-        pass
-
-    @typing.overload
-    def __new__(self) -> None:
-        pass
-
-    def __new__(self, *args) -> None:
-        pass
-
-    AverageEndTradeDrawdown: float
-
-    AverageLosingTradeDuration: datetime.timedelta
-
-    AverageLoss: float
-
-    AverageMAE: float
-
-    AverageMFE: float
-
-    AverageProfit: float
-
-    AverageProfitLoss: float
-
-    AverageTradeDuration: datetime.timedelta
-
-    AverageWinningTradeDuration: datetime.timedelta
-
-    EndDateTime: typing.Optional[datetime.datetime]
-
-    LargestLoss: float
-
-    LargestMAE: float
-
-    LargestMFE: float
-
-    LargestProfit: float
-
-    LossRate: float
-
-    MaxConsecutiveLosingTrades: int
-
-    MaxConsecutiveWinningTrades: int
-
-    MaximumClosedTradeDrawdown: float
-
-    MaximumDrawdownDuration: datetime.timedelta
-
-    MaximumEndTradeDrawdown: float
-
-    MaximumIntraTradeDrawdown: float
-
-    MedianLosingTradeDuration: datetime.timedelta
-
-    MedianTradeDuration: datetime.timedelta
-
-    MedianWinningTradeDuration: datetime.timedelta
-
-    NumberOfLosingTrades: int
-
-    NumberOfWinningTrades: int
-
-    ProfitFactor: float
-
-    ProfitLossDownsideDeviation: float
-
-    ProfitLossRatio: float
-
-    ProfitLossStandardDeviation: float
-
-    ProfitToMaxDrawdownRatio: float
-
-    SharpeRatio: float
-
-    SortinoRatio: float
-
-    StartDateTime: typing.Optional[datetime.datetime]
-
-    TotalFees: float
-
-    TotalLoss: float
-
-    TotalNumberOfTrades: int
-
-    TotalProfit: float
-
-    TotalProfitLoss: float
-
-    WinLossRatio: float
-
-    WinRate: float
-
-
-

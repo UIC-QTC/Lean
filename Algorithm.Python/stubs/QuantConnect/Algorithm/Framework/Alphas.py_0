@@ -1,0 +1,133 @@
+# encoding: utf-8
+# module QuantConnect.Algorithm.Framework.Alphas calls itself Alphas
+# from QuantConnect.Algorithm, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null
+# by generator 1.145
+# no doc
+
+# imports
+import datetime
+import Python.Runtime
+import QuantConnect.Algorithm
+import QuantConnect.Algorithm.Framework.Alphas
+import QuantConnect.Data
+import QuantConnect.Data.UniverseSelection
+import typing
+
+# no functions
+# classes
+
+class AlphaModel(System.object, QuantConnect.Algorithm.Framework.Alphas.IAlphaModel, QuantConnect.Algorithm.Framework.INotifiedSecurityChanges, QuantConnect.Algorithm.Framework.Alphas.INamedModel):
+    """
+    Provides a base class for alpha models.
+    
+    AlphaModel()
+    """
+    def OnSecuritiesChanged(self, algorithm: QuantConnect.Algorithm.QCAlgorithm, changes: QuantConnect.Data.UniverseSelection.SecurityChanges) -> None:
+        pass
+
+    def Update(self, algorithm: QuantConnect.Algorithm.QCAlgorithm, data: QuantConnect.Data.Slice) -> typing.List[QuantConnect.Algorithm.Framework.Alphas.Insight]:
+        pass
+
+    Name: str
+
+
+
+class AlphaModelExtensions(System.object):
+    """ Provides extension methods for alpha models """
+    @staticmethod
+    def GetModelName(model: QuantConnect.Algorithm.Framework.Alphas.IAlphaModel) -> str:
+        pass
+
+    __all__: list
+
+
+class AlphaModelPythonWrapper(QuantConnect.Algorithm.Framework.Alphas.AlphaModel, QuantConnect.Algorithm.Framework.Alphas.IAlphaModel, QuantConnect.Algorithm.Framework.INotifiedSecurityChanges, QuantConnect.Algorithm.Framework.Alphas.INamedModel):
+    """
+    Provides an implementation of QuantConnect.Algorithm.Framework.Alphas.IAlphaModel that wraps a Python.Runtime.PyObject object
+    
+    AlphaModelPythonWrapper(model: PyObject)
+    """
+    def OnSecuritiesChanged(self, algorithm: QuantConnect.Algorithm.QCAlgorithm, changes: QuantConnect.Data.UniverseSelection.SecurityChanges) -> None:
+        pass
+
+    def Update(self, algorithm: QuantConnect.Algorithm.QCAlgorithm, data: QuantConnect.Data.Slice) -> typing.List[QuantConnect.Algorithm.Framework.Alphas.Insight]:
+        pass
+
+    @staticmethod # known case of __new__
+    def __new__(self, model: Python.Runtime.PyObject) -> None:
+        pass
+
+    Name: str
+
+
+
+class CompositeAlphaModel(QuantConnect.Algorithm.Framework.Alphas.AlphaModel, QuantConnect.Algorithm.Framework.Alphas.IAlphaModel, QuantConnect.Algorithm.Framework.INotifiedSecurityChanges, QuantConnect.Algorithm.Framework.Alphas.INamedModel):
+    """
+    Provides an implementation of QuantConnect.Algorithm.Framework.Alphas.IAlphaModel that combines multiple alpha
+                models into a single alpha model and properly sets each insights 'SourceModel' property.
+    
+    CompositeAlphaModel(*alphaModels: Array[IAlphaModel])
+    CompositeAlphaModel(*alphaModels: Array[PyObject])
+    CompositeAlphaModel(alphaModel: PyObject)
+    """
+    @typing.overload
+    def AddAlpha(self, alphaModel: QuantConnect.Algorithm.Framework.Alphas.IAlphaModel) -> None:
+        pass
+
+    @typing.overload
+    def AddAlpha(self, pyAlphaModel: Python.Runtime.PyObject) -> None:
+        pass
+
+    def AddAlpha(self, *args) -> None:
+        pass
+
+    def OnSecuritiesChanged(self, algorithm: QuantConnect.Algorithm.QCAlgorithm, changes: QuantConnect.Data.UniverseSelection.SecurityChanges) -> None:
+        pass
+
+    def Update(self, algorithm: QuantConnect.Algorithm.QCAlgorithm, data: QuantConnect.Data.Slice) -> typing.List[QuantConnect.Algorithm.Framework.Alphas.Insight]:
+        pass
+
+    @staticmethod # known case of __new__
+    @typing.overload
+    def __new__(self, alphaModels: typing.List[QuantConnect.Algorithm.Framework.Alphas.IAlphaModel]) -> None:
+        pass
+
+    @typing.overload
+    def __new__(self, alphaModels: typing.List[Python.Runtime.PyObject]) -> None:
+        pass
+
+    @typing.overload
+    def __new__(self, alphaModel: Python.Runtime.PyObject) -> None:
+        pass
+
+    def __new__(self, *args) -> None:
+        pass
+
+
+class IAlphaModel(QuantConnect.Algorithm.Framework.INotifiedSecurityChanges):
+    """ Algorithm framework model that produces insights """
+    def Update(self, algorithm: QuantConnect.Algorithm.QCAlgorithm, data: QuantConnect.Data.Slice) -> typing.List[QuantConnect.Algorithm.Framework.Alphas.Insight]:
+        pass
+
+
+class INamedModel:
+    """
+    Provides a marker interface allowing models to define their own names.
+                If not specified, the framework will use the model's type name.
+                Implementation of this is not required unless you plan on running multiple models
+                of the same type w/ different parameters.
+    """
+    Name: str
+
+
+
+class NullAlphaModel(QuantConnect.Algorithm.Framework.Alphas.AlphaModel, QuantConnect.Algorithm.Framework.Alphas.IAlphaModel, QuantConnect.Algorithm.Framework.INotifiedSecurityChanges, QuantConnect.Algorithm.Framework.Alphas.INamedModel):
+    """
+    Provides a null implementation of an alpha model
+    
+    NullAlphaModel()
+    """
+    def Update(self, algorithm: QuantConnect.Algorithm.QCAlgorithm, data: QuantConnect.Data.Slice) -> typing.List[QuantConnect.Algorithm.Framework.Alphas.Insight]:
+        pass
+
+

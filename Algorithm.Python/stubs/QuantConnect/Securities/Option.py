@@ -1,30 +1,26 @@
-# encoding: utf-8
-# module QuantConnect.Securities.Option calls itself Option
-# from QuantConnect.Common, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null
-# by generator 1.145
-# no doc
-
-# imports
-import datetime
-import Python.Runtime
-import QuantConnect
-import QuantConnect.Data
-import QuantConnect.Data.Market
-import QuantConnect.Orders
-import QuantConnect.Orders.OptionExercise
-import QuantConnect.Securities
-import QuantConnect.Securities.Option
-import System
-import System.Collections.Concurrent
+from .__Option_1 import *
 import typing
+import System.Collections.Concurrent
+import System
+import QuantConnect.Securities.Option
+import QuantConnect.Securities
+import QuantConnect.Orders.OptionExercise
+import QuantConnect.Orders
+import QuantConnect.Data.Market
+import QuantConnect.Data
+import QuantConnect
+import Python.Runtime
+import datetime
 
 # no functions
 # classes
 
 class ConstantQLRiskFreeRateEstimator(System.object, QuantConnect.Securities.Option.IQLRiskFreeRateEstimator):
     """
-    Class implements default flat risk free curve, implementing QuantConnect.Securities.Option.IQLRiskFreeRateEstimator.
-    
+    Class implements default flat risk free curve, implementing QuantConnect.Securities.Option.IQLRiskFreeRateEstimator.
+
+    
+
     ConstantQLRiskFreeRateEstimator(riskFreeRate: float)
     """
     def Estimate(self, security: QuantConnect.Securities.Security, slice: QuantConnect.Data.Slice, contract: QuantConnect.Data.Market.OptionContract) -> float:
@@ -37,10 +33,14 @@ class ConstantQLRiskFreeRateEstimator(System.object, QuantConnect.Securities.Opt
 
 class CurrentPriceOptionPriceModel(System.object, QuantConnect.Securities.Option.IOptionPriceModel):
     """
-    Provides a default implementation of QuantConnect.Securities.Option.IOptionPriceModel that does not compute any
-                greeks and uses the current price for the theoretical price. 
-                This is a stub implementation until the real models are implemented
-    
+    Provides a default implementation of QuantConnect.Securities.Option.IOptionPriceModel that does not compute any
+
+                greeks and uses the current price for the theoretical price. 
+
+                This is a stub implementation until the real models are implemented
+
+    
+
     CurrentPriceOptionPriceModel()
     """
     def Evaluate(self, security: QuantConnect.Securities.Security, slice: QuantConnect.Data.Slice, contract: QuantConnect.Data.Market.OptionContract) -> QuantConnect.Securities.Option.OptionPriceModelResult:
@@ -49,8 +49,10 @@ class CurrentPriceOptionPriceModel(System.object, QuantConnect.Securities.Option
 
 class EmptyOptionChainProvider(System.object, QuantConnect.Interfaces.IOptionChainProvider):
     """
-    An implementation of QuantConnect.Interfaces.IOptionChainProvider that always returns an empty list of contracts
-    
+    An implementation of QuantConnect.Interfaces.IOptionChainProvider that always returns an empty list of contracts
+
+    
+
     EmptyOptionChainProvider()
     """
     def GetOptionContractList(self, symbol: QuantConnect.Symbol, date: datetime.datetime) -> typing.List[QuantConnect.Symbol]:
@@ -65,9 +67,12 @@ class IOptionPriceModel:
 
 class Option(QuantConnect.Securities.Security, QuantConnect.Interfaces.ISecurityPrice, QuantConnect.Securities.IDerivativeSecurity, QuantConnect.Interfaces.IOptionPrice):
     """
-    Option Security Object Implementation for Option Assets
-    
-    Option(exchangeHours: SecurityExchangeHours, config: SubscriptionDataConfig, quoteCurrency: Cash, symbolProperties: OptionSymbolProperties, currencyConverter: ICurrencyConverter, registeredTypes: IRegisteredSecurityDataTypesProvider)
+    Option Security Object Implementation for Option Assets
+
+    
+
+    Option(exchangeHours: SecurityExchangeHours, config: SubscriptionDataConfig, quoteCurrency: Cash, symbolProperties: OptionSymbolProperties, currencyConverter: ICurrencyConverter, registeredTypes: IRegisteredSecurityDataTypesProvider)
+
     Option(symbol: Symbol, exchangeHours: SecurityExchangeHours, quoteCurrency: Cash, symbolProperties: OptionSymbolProperties, currencyConverter: ICurrencyConverter, registeredTypes: IRegisteredSecurityDataTypesProvider, securityCache: SecurityCache)
     """
     def EvaluatePriceModel(self, slice: QuantConnect.Data.Slice, contract: QuantConnect.Data.Market.OptionContract) -> QuantConnect.Securities.Option.OptionPriceModelResult:
@@ -170,22 +175,28 @@ class Option(QuantConnect.Securities.Security, QuantConnect.Interfaces.ISecurity
 
 class OptionCache(QuantConnect.Securities.SecurityCache):
     """
-    Option specific caching support
-    
+    Option specific caching support
+
+    
+
     OptionCache()
     """
 
 class OptionDataFilter(QuantConnect.Securities.SecurityDataFilter, QuantConnect.Securities.Interfaces.ISecurityDataFilter):
     """
-    Option packet by packet data filtering mechanism for dynamically detecting bad ticks.
-    
+    Option packet by packet data filtering mechanism for dynamically detecting bad ticks.
+
+    
+
     OptionDataFilter()
     """
 
 class OptionExchange(QuantConnect.Securities.SecurityExchange):
     """
-    Option exchange class - information and helper tools for option exchange properties
-    
+    Option exchange class - information and helper tools for option exchange properties
+
+    
+
     OptionExchange(exchangeHours: SecurityExchangeHours)
     """
     @staticmethod # known case of __new__
@@ -198,8 +209,10 @@ class OptionExchange(QuantConnect.Securities.SecurityExchange):
 
 class OptionHolding(QuantConnect.Securities.SecurityHolding):
     """
-    Option holdings implementation of the base securities class
-    
+    Option holdings implementation of the base securities class
+
+    
+
     OptionHolding(security: Option, currencyConverter: ICurrencyConverter)
     """
     @staticmethod # known case of __new__
@@ -210,8 +223,10 @@ class OptionHolding(QuantConnect.Securities.SecurityHolding):
 
 class OptionMarginModel(QuantConnect.Securities.SecurityMarginModel, QuantConnect.Securities.IBuyingPowerModel):
     """
-    Represents a simple option margin model.
-    
+    Represents a simple option margin model.
+
+    
+
     OptionMarginModel(requiredFreeBuyingPowerPercent: Decimal)
     """
     def GetLeverage(self, security: QuantConnect.Securities.Security) -> float:
@@ -228,9 +243,12 @@ class OptionMarginModel(QuantConnect.Securities.SecurityMarginModel, QuantConnec
 
 class OptionPortfolioModel(QuantConnect.Securities.SecurityPortfolioModel, QuantConnect.Securities.ISecurityPortfolioModel):
     """
-    Provides an implementation of QuantConnect.Securities.ISecurityPortfolioModel for options that supports
-                default fills as well as option exercising.
-    
+    Provides an implementation of QuantConnect.Securities.ISecurityPortfolioModel for options that supports
+
+                default fills as well as option exercising.
+
+    
+
     OptionPortfolioModel()
     """
     def ProcessExerciseFill(self, portfolio: QuantConnect.Securities.SecurityPortfolioManager, security: QuantConnect.Securities.Security, order: QuantConnect.Orders.Order, fill: QuantConnect.Orders.OrderEvent) -> None:
@@ -242,9 +260,12 @@ class OptionPortfolioModel(QuantConnect.Securities.SecurityPortfolioModel, Quant
 
 class OptionPriceModelResult(System.object):
     """
-    Result type for QuantConnect.Securities.Option.IOptionPriceModel.Evaluate(QuantConnect.Securities.Security,QuantConnect.Data.Slice,QuantConnect.Data.Market.OptionContract)
-    
-    OptionPriceModelResult(theoreticalPrice: Decimal, greeks: Greeks)
+    Result type for QuantConnect.Securities.Option.IOptionPriceModel.Evaluate(QuantConnect.Securities.Security,QuantConnect.Data.Slice,QuantConnect.Data.Market.OptionContract)
+
+    
+
+    OptionPriceModelResult(theoreticalPrice: Decimal, greeks: Greeks)
+
     OptionPriceModelResult(theoreticalPrice: Decimal, impliedVolatility: Func[Decimal], greeks: Func[Greeks])
     """
     @staticmethod # known case of __new__
@@ -318,117 +339,3 @@ class OptionPriceModels(System.object):
         pass
 
     __all__: list
-
-
-class OptionStrategies(System.object):
-    # no doc
-    @staticmethod
-    def BearCallSpread(canonicalOption: QuantConnect.Symbol, leg1Strike: float, leg2Strike: float, expiration: datetime.datetime) -> QuantConnect.Securities.Option.OptionStrategy:
-        pass
-
-    @staticmethod
-    def BearPutSpread(canonicalOption: QuantConnect.Symbol, leg1Strike: float, leg2Strike: float, expiration: datetime.datetime) -> QuantConnect.Securities.Option.OptionStrategy:
-        pass
-
-    @staticmethod
-    def BullCallSpread(canonicalOption: QuantConnect.Symbol, leg1Strike: float, leg2Strike: float, expiration: datetime.datetime) -> QuantConnect.Securities.Option.OptionStrategy:
-        pass
-
-    @staticmethod
-    def BullPutSpread(canonicalOption: QuantConnect.Symbol, leg1Strike: float, leg2Strike: float, expiration: datetime.datetime) -> QuantConnect.Securities.Option.OptionStrategy:
-        pass
-
-    @staticmethod
-    def CallButterfly(canonicalOption: QuantConnect.Symbol, leg1Strike: float, leg2Strike: float, leg3Strike: float, expiration: datetime.datetime) -> QuantConnect.Securities.Option.OptionStrategy:
-        pass
-
-    @staticmethod
-    def CallCalendarSpread(canonicalOption: QuantConnect.Symbol, strike: float, expiration1: datetime.datetime, expiration2: datetime.datetime) -> QuantConnect.Securities.Option.OptionStrategy:
-        pass
-
-    @staticmethod
-    def PutButterfly(canonicalOption: QuantConnect.Symbol, leg1Strike: float, leg2Strike: float, leg3Strike: float, expiration: datetime.datetime) -> QuantConnect.Securities.Option.OptionStrategy:
-        pass
-
-    @staticmethod
-    def PutCalendarSpread(canonicalOption: QuantConnect.Symbol, strike: float, expiration1: datetime.datetime, expiration2: datetime.datetime) -> QuantConnect.Securities.Option.OptionStrategy:
-        pass
-
-    @staticmethod
-    def Straddle(canonicalOption: QuantConnect.Symbol, strike: float, expiration: datetime.datetime) -> QuantConnect.Securities.Option.OptionStrategy:
-        pass
-
-    @staticmethod
-    def Strangle(canonicalOption: QuantConnect.Symbol, leg1Strike: float, leg2Strike: float, expiration: datetime.datetime) -> QuantConnect.Securities.Option.OptionStrategy:
-        pass
-
-    __all__: list
-
-
-class OptionStrategy(System.object):
-    """
-    Option strategy specification class. Describes option strategy and its parameters for trading.
-    
-    OptionStrategy()
-    """
-    Name: str
-
-    OptionLegs: typing.List[QuantConnect.Securities.Option.OptionLegData]
-
-    Underlying: QuantConnect.Symbol
-
-    UnderlyingLegs: typing.List[QuantConnect.Securities.Option.UnderlyingLegData]
-
-
-    OptionLegData: type
-    UnderlyingLegData: type
-
-
-class OptionSymbol(System.object):
-    """ Static class contains common utility methods specific to symbols representing the option contracts """
-    @staticmethod
-    def GetLastDayOfTrading(symbol: QuantConnect.Symbol) -> datetime.datetime:
-        pass
-
-    @staticmethod
-    def IsOptionContractExpired(symbol: QuantConnect.Symbol, currentTimeUtc: datetime.datetime) -> bool:
-        pass
-
-    @staticmethod
-    def IsStandard(symbol: QuantConnect.Symbol) -> bool:
-        pass
-
-    @staticmethod
-    def IsStandardContract(symbol: QuantConnect.Symbol) -> bool:
-        pass
-
-    @staticmethod
-    def IsWeekly(symbol: QuantConnect.Symbol) -> bool:
-        pass
-
-    __all__: list
-
-
-class OptionSymbolProperties(QuantConnect.Securities.SymbolProperties):
-    """
-    Represents common properties for a specific option contract
-    
-    OptionSymbolProperties(description: str, quoteCurrency: str, contractMultiplier: Decimal, pipSize: Decimal, lotSize: Decimal)
-    OptionSymbolProperties(properties: SymbolProperties)
-    """
-    @staticmethod # known case of __new__
-    @typing.overload
-    def __new__(self, description: str, quoteCurrency: str, contractMultiplier: float, pipSize: float, lotSize: float) -> None:
-        pass
-
-    @typing.overload
-    def __new__(self, properties: QuantConnect.Securities.SymbolProperties) -> None:
-        pass
-
-    def __new__(self, *args) -> None:
-        pass
-
-    ContractUnitOfTrade: int
-
-
-

@@ -40,15 +40,15 @@ class IntrinioDataTransformation(System.Enum, System.IComparable, System.IFormat
     enum IntrinioDataTransformation, values: AnnualyCCRoc (3), AnnualyPc (8), AnnualyRoc (1), CCRoc (4), CompoundedAnnualRoc (2), Level (5), Ln (6), Pc (7), Roc (0)
     """
     value__: int
-    AnnualyCCRoc: IntrinioDataTransformation
-    AnnualyPc: IntrinioDataTransformation
-    AnnualyRoc: IntrinioDataTransformation
-    CCRoc: IntrinioDataTransformation
-    CompoundedAnnualRoc: IntrinioDataTransformation
-    Level: IntrinioDataTransformation
-    Ln: IntrinioDataTransformation
-    Pc: IntrinioDataTransformation
-    Roc: IntrinioDataTransformation
+    AnnualyCCRoc: 'IntrinioDataTransformation'
+    AnnualyPc: 'IntrinioDataTransformation'
+    AnnualyRoc: 'IntrinioDataTransformation'
+    CCRoc: 'IntrinioDataTransformation'
+    CompoundedAnnualRoc: 'IntrinioDataTransformation'
+    Level: 'IntrinioDataTransformation'
+    Ln: 'IntrinioDataTransformation'
+    Pc: 'IntrinioDataTransformation'
+    Roc: 'IntrinioDataTransformation'
 
 
 class IntrinioEconomicData(QuantConnect.Data.BaseData, QuantConnect.Data.IBaseData):
